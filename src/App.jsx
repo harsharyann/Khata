@@ -985,6 +985,28 @@ export default function App() {
                 </form>
               </div>
 
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))', gap: '1.75rem', marginBottom: '2.5rem' }}>
+                <div className="panel" style={{ padding: '1.5rem' }}>
+                  <div className="panel-header" style={{ background: 'transparent', borderBottom: '1px solid rgba(0,0,0,0.05)', padding: '0 0 1rem 0', marginBottom: '1.5rem' }}>
+                    <TrendingUp size={18} style={{ color: 'var(--accent)' }}/>
+                    <h3 style={{ fontSize: '1.1rem', fontWeight: 800 }}>Cashflow Trend (Last 15 Days)</h3>
+                  </div>
+                  <div style={{ height: '260px', position: 'relative' }}>
+                    <Line data={lineData} options={chartOpts} />
+                  </div>
+                </div>
+
+                <div className="panel" style={{ padding: '1.5rem' }}>
+                  <div className="panel-header" style={{ background: 'transparent', borderBottom: '1px solid rgba(0,0,0,0.05)', padding: '0 0 1rem 0', marginBottom: '1.5rem' }}>
+                    <BarChart2 size={18} style={{ color: 'var(--blue)' }}/>
+                    <h3 style={{ fontSize: '1.1rem', fontWeight: 800 }}>Monthly Income vs Expense</h3>
+                  </div>
+                  <div style={{ height: '260px', position: 'relative' }}>
+                    <Bar data={yearlyBarData} options={{...chartOpts, plugins: {...chartOpts.plugins, legend: { position: 'top', labels: { boxWidth: 12 } }}}} />
+                  </div>
+                </div>
+              </div>
+
               <div style={{ marginBottom: '1rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <div>
                   <h2 style={{ fontSize: '1.1rem', fontWeight: 700, color: 'var(--text-primary)' }}>Daily Cashflow Summary</h2>
@@ -1737,6 +1759,9 @@ export default function App() {
                   mDate.setMonth(mDate.getMonth() + samiti.tenure_months);
                   
                   const sPayments = samitiPayments.filter(p => p.samiti_id === samiti.id);
+                  const currentMonthYearStr = new Date().toISOString().slice(0, 7);
+                  const paidThisMonthCount = sPayments.filter(p => p.payment_date.startsWith(currentMonthYearStr)).length;
+                  const paidThisMonth = paidThisMonthCount * samiti.daily_amount;
                   const totalPaid = sPayments.length * samiti.daily_amount;
                   const progressPct = samiti.maturity_amount > 0 ? Math.min(100, (totalPaid / samiti.maturity_amount) * 100) : 0;
 
@@ -1759,18 +1784,22 @@ export default function App() {
                         </div>
                       </div>
 
-                      <div className="detail-grid" style={{ margin: '0', gridTemplateColumns: '1fr 1fr 1fr' }}>
+                      <div className="detail-grid" style={{ margin: '0', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: '0.5rem' }}>
                         <div style={{ display: 'flex', flexDirection: 'column' }}>
-                          <span style={{ fontSize: '0.7rem', fontWeight: 700, color: 'var(--text-secondary)', textTransform: 'uppercase' }}>Daily</span>
-                          <span style={{ fontSize: '1.05rem', fontWeight: 800, color: 'var(--text-primary)' }}>{fmt(samiti.daily_amount)}</span>
+                          <span style={{ fontSize: '0.65rem', fontWeight: 700, color: 'var(--text-secondary)', textTransform: 'uppercase' }}>Daily</span>
+                          <span style={{ fontSize: '1rem', fontWeight: 800, color: 'var(--text-primary)' }}>{fmt(samiti.daily_amount)}</span>
                         </div>
                         <div style={{ display: 'flex', flexDirection: 'column' }}>
-                          <span style={{ fontSize: '0.7rem', fontWeight: 700, color: 'var(--text-secondary)', textTransform: 'uppercase' }}>Paid</span>
-                          <span style={{ fontSize: '1.05rem', fontWeight: 800, color: 'var(--green)' }}>{fmt(totalPaid)}</span>
+                          <span style={{ fontSize: '0.65rem', fontWeight: 700, color: 'var(--text-secondary)', textTransform: 'uppercase' }}>This Month</span>
+                          <span style={{ fontSize: '1rem', fontWeight: 800, color: 'var(--green)' }}>{fmt(paidThisMonth)}</span>
                         </div>
                         <div style={{ display: 'flex', flexDirection: 'column' }}>
-                          <span style={{ fontSize: '0.7rem', fontWeight: 700, color: 'var(--text-secondary)', textTransform: 'uppercase' }}>Maturity</span>
-                          <span style={{ fontSize: '1.05rem', fontWeight: 800, color: 'var(--text-primary)' }}>{fmt(samiti.maturity_amount)}</span>
+                          <span style={{ fontSize: '0.65rem', fontWeight: 700, color: 'var(--text-secondary)', textTransform: 'uppercase' }}>Total Paid</span>
+                          <span style={{ fontSize: '1rem', fontWeight: 800, color: 'var(--green)' }}>{fmt(totalPaid)}</span>
+                        </div>
+                        <div style={{ display: 'flex', flexDirection: 'column' }}>
+                          <span style={{ fontSize: '0.65rem', fontWeight: 700, color: 'var(--text-secondary)', textTransform: 'uppercase' }}>Maturity</span>
+                          <span style={{ fontSize: '1rem', fontWeight: 800, color: 'var(--text-primary)' }}>{fmt(samiti.maturity_amount)}</span>
                         </div>
                       </div>
 
