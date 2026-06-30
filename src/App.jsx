@@ -482,24 +482,7 @@ export default function App() {
               {/* Lower Section */}
               <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
                 
-                {/* Cash Bento */}
-                <div className="cred-card" style={{ padding: 0 }}>
-                  <div className="panel-header" style={{ cursor: 'pointer', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }} onClick={() => setCashCollapsed(!cashCollapsed)}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                      <Wallet size={16} style={{ color: 'var(--green)' }}/>
-                      <h3>Cash on Hand</h3>
-                    </div>
-                    <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', fontWeight: 600 }}>{cashCollapsed ? '▼ Expand' : '▲ Collapse'}</span>
-                  </div>
-                  {!cashCollapsed && (
-                    <div className="panel-body" style={{ padding: '1.25rem' }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 16px', background: 'var(--green-bg)', borderRadius: 'var(--r-md)', border: '1px solid rgba(16, 185, 129, 0.2)' }}>
-                        <span style={{ fontSize: '0.95rem', fontWeight: 700, color: 'var(--green)' }}>Physical Currency</span>
-                        <span style={{ fontWeight: 800, fontSize: '1.1rem', color: 'var(--green)' }}>{fmt(cash)}</span>
-                      </div>
-                    </div>
-                  )}
-                </div>
+
 
                 {/* Bank Accounts Bento */}
                 <div className="cred-card" style={{ padding: 0 }}>
