@@ -65,6 +65,9 @@ export default function App() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [view, setView]         = useState('home');
   const [month, setMonth]       = useState(new Date());
+  const [cashCollapsed, setCashCollapsed] = useState(false);
+  const [banksCollapsed, setBanksCollapsed] = useState(false);
+  const [cardsCollapsed, setCardsCollapsed] = useState(false);
 
   const [incomes,     setIncomes]     = useState(() => JSON.parse(localStorage.getItem('fi_inc_v2')  || 'null') ?? DUMMY_INCOMES);
   const [expenses,    setExpenses]    = useState(() => JSON.parse(localStorage.getItem('fi_exp_v2')  || 'null') ?? DUMMY_EXPENSES);
@@ -493,45 +496,85 @@ export default function App() {
                   </div>
                 </div>
 
-                <div className="cred-card" style={{ padding: 0, maxHeight: 310, overflowY: 'auto' }}>
-                  <div className="panel-header" style={{ position: 'sticky', top: 0, zIndex: 10, background: 'var(--bg-card)', borderBottom: '1px solid var(--border)', backdropFilter: 'blur(10px)' }}>
-                    <Building size={16} style={{ color: 'var(--blue)' }}/>
-                    <h3>All Accounts & Cards</h3>
-                  </div>
-                  <div className="panel-body" style={{ padding: '1.25rem', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-                    {/* Cash */}
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 16px', background: 'var(--green-bg)', borderRadius: 'var(--r-md)', border: '1px solid rgba(16, 185, 129, 0.2)' }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                        <div style={{ background: 'var(--bg-card)', padding: 6, borderRadius: 8, boxShadow: 'var(--shadow-sm)' }}><Wallet size={16} style={{ color: 'var(--green)' }}/></div>
-                        <span style={{ fontSize: '0.95rem', fontWeight: 700, color: 'var(--green)' }}>Cash on Hand</span>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+                  
+                  {/* Cash Bento */}
+                  <div className="cred-card" style={{ padding: 0 }}>
+                    <div className="panel-header" style={{ cursor: 'pointer', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }} onClick={() => setCashCollapsed(!cashCollapsed)}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                        <Wallet size={16} style={{ color: 'var(--green)' }}/>
+                        <h3>Cash on Hand</h3>
                       </div>
-                      <span style={{ fontWeight: 800, fontSize: '1.1rem', color: 'var(--green)' }}>{fmt(cash)}</span>
+                      <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', fontWeight: 600 }}>{cashCollapsed ? '▼ Expand' : '▲ Collapse'}</span>
                     </div>
-                    {/* Banks */}
-                    {banks.length > 0 && <div style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', marginTop: 8 }}>Bank Accounts</div>}
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '0.75rem' }}>
-                      {banks.map(acc => (
-                        <div key={acc.id} style={{ padding: '12px', background: 'var(--blue-bg)', border: '1px solid rgba(59, 130, 246, 0.2)', borderRadius: 'var(--r-md)', display: 'flex', flexDirection: 'column', gap: 4 }}>
-                          <div style={{ fontWeight: 700, fontSize: '0.9rem', color: 'var(--blue)' }}>{acc.bankName}</div>
-                          <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>{acc.type} • ****{acc.accountNumber.slice(-4)}</div>
-                          <div style={{ fontWeight: 800, fontSize: '1.1rem', color: 'var(--text-primary)', marginTop: 4 }}>{fmt(acc.balance)}</div>
+                    {!cashCollapsed && (
+                      <div className="panel-body" style={{ padding: '1.25rem' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 16px', background: 'var(--green-bg)', borderRadius: 'var(--r-md)', border: '1px solid rgba(16, 185, 129, 0.2)' }}>
+                          <span style={{ fontSize: '0.95rem', fontWeight: 700, color: 'var(--green)' }}>Physical Currency</span>
+                          <span style={{ fontWeight: 800, fontSize: '1.1rem', color: 'var(--green)' }}>{fmt(cash)}</span>
                         </div>
-                      ))}
-                    </div>
-                    {/* Credit Cards */}
-                    {creditCards.length > 0 && <div style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', marginTop: 8 }}>Credit Cards</div>}
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '0.75rem' }}>
-                      {creditCards.map(cc => (
-                        <div key={cc.id} style={{ padding: '12px', background: 'var(--red-bg)', border: '1px solid rgba(239, 68, 68, 0.2)', borderRadius: 'var(--r-md)', display: 'flex', flexDirection: 'column', gap: 4 }}>
-                          <div style={{ fontWeight: 700, fontSize: '0.9rem', color: 'var(--red)' }}>{cc.bankName} CC</div>
-                          <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>Limit: {fmt(cc.limit)}</div>
-                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginTop: 4 }}>
-                            <div style={{ fontWeight: 800, fontSize: '1.1rem', color: 'var(--red)' }}>-{fmt(cc.outstanding)}</div>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
+                      </div>
+                    )}
                   </div>
+
+                  {/* Bank Accounts Bento */}
+                  <div className="cred-card" style={{ padding: 0 }}>
+                    <div className="panel-header" style={{ cursor: 'pointer', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }} onClick={() => setBanksCollapsed(!banksCollapsed)}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                        <Building size={16} style={{ color: 'var(--blue)' }}/>
+                        <h3>Bank Accounts ({banks.length})</h3>
+                      </div>
+                      <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', fontWeight: 600 }}>{banksCollapsed ? '▼ Expand' : '▲ Collapse'}</span>
+                    </div>
+                    {!banksCollapsed && (
+                      <div className="panel-body" style={{ padding: '1.25rem' }}>
+                        {banks.length > 0 ? (
+                          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '0.75rem' }}>
+                            {banks.map(acc => (
+                              <div key={acc.id} style={{ padding: '12px', background: 'var(--blue-bg)', border: '1px solid rgba(59, 130, 246, 0.2)', borderRadius: 'var(--r-md)', display: 'flex', flexDirection: 'column', gap: 4 }}>
+                                <div style={{ fontWeight: 700, fontSize: '0.9rem', color: 'var(--blue)' }}>{acc.bankName}</div>
+                                <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>{acc.type} • ****{acc.accountNumber.slice(-4)}</div>
+                                <div style={{ fontWeight: 800, fontSize: '1.1rem', color: 'var(--text-primary)', marginTop: 4 }}>{fmt(acc.balance)}</div>
+                              </div>
+                            ))}
+                          </div>
+                        ) : (
+                          <div className="empty-state">No bank accounts added.</div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Credit Cards Bento */}
+                  <div className="cred-card" style={{ padding: 0 }}>
+                    <div className="panel-header" style={{ cursor: 'pointer', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }} onClick={() => setCardsCollapsed(!cardsCollapsed)}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                        <CreditCard size={16} style={{ color: 'var(--red)' }}/>
+                        <h3>Credit Cards ({creditCards.length})</h3>
+                      </div>
+                      <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', fontWeight: 600 }}>{cardsCollapsed ? '▼ Expand' : '▲ Collapse'}</span>
+                    </div>
+                    {!cardsCollapsed && (
+                      <div className="panel-body" style={{ padding: '1.25rem' }}>
+                        {creditCards.length > 0 ? (
+                          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '0.75rem' }}>
+                            {creditCards.map(cc => (
+                              <div key={cc.id} style={{ padding: '12px', background: 'var(--red-bg)', border: '1px solid rgba(239, 68, 68, 0.2)', borderRadius: 'var(--r-md)', display: 'flex', flexDirection: 'column', gap: 4 }}>
+                                <div style={{ fontWeight: 700, fontSize: '0.9rem', color: 'var(--red)' }}>{cc.bankName} CC</div>
+                                <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>Limit: {fmt(cc.limit)}</div>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginTop: 4 }}>
+                                  <div style={{ fontWeight: 800, fontSize: '1.1rem', color: 'var(--red)' }}>-{fmt(cc.outstanding)}</div>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        ) : (
+                          <div className="empty-state">No credit cards added.</div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+
                 </div>
               </div>
             </div>
