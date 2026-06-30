@@ -615,20 +615,17 @@ export default function App() {
 
           {/* ══ CREDIT CARDS ══ */}
           {view === 'credit-cards' && (() => {
-            const activeCardId = selectedCardId || creditCards[0]?.id;
-            const activeCard = creditCards.find(c => c.id === activeCardId) || creditCards[0];
-
             return (
               <div className="fade-in-view">
                 {/* Section Header */}
-                <div className="page-header" style={{ marginBottom: '2.5rem' }}>
+                <div className="page-header" style={{ marginBottom: '2rem' }}>
                   <div className="page-header-left">
                     <span className="eyebrow">Liabilities</span>
                     <h1>Credit Cards</h1>
                   </div>
                   <div className="page-header-right">
-                    <button className="btn btn-primary" onClick={() => openModal('Add Credit Card', 'card')} style={{ borderRadius: '99px', padding: '10px 24px' }}>
-                      <Plus size={15}/> Add New Card
+                    <button className="btn btn-primary" onClick={() => openModal('Add Credit Card', 'card')}>
+                      <Plus size={15}/> Add Card
                     </button>
                   </div>
                 </div>
@@ -641,303 +638,137 @@ export default function App() {
                 </div>
 
                 {creditCards.length > 0 ? (
-                  <div className="cc-split-layout" style={{ display: 'grid', gridTemplateColumns: '1.1fr 1.3fr', gap: '3rem', alignItems: 'start' }}>
-                    
-                    {/* Left Column: Premium Cards Deck */}
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-                      <div style={{ fontSize: '0.75rem', fontWeight: 800, color: 'var(--text-muted)', letterSpacing: '1px', textTransform: 'uppercase' }}>Available Cards</div>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '1.5rem' }}>
+                    {creditCards.map((card, idx) => {
+                      const util = card.limit > 0 ? ((card.outstanding / card.limit) * 100).toFixed(0) : 0;
                       
-                      {creditCards.map((card, idx) => {
-                        const isSelected = card.id === activeCard?.id;
-                        const util = card.limit > 0 ? ((card.outstanding / card.limit) * 100).toFixed(0) : 0;
-                        
-                        let healthColor = "var(--green)";
-                        if (util >= 30 && util <= 50) healthColor = "var(--amber)";
-                        if (util > 50) healthColor = "var(--red)";
-
-                        // Card gradient presets
-                        const grads = [
-                          'linear-gradient(135deg, #111827 0%, #1e1b4b 100%)',
-                          'linear-gradient(135deg, #0f172a 0%, #0284c7 100%)',
-                          'linear-gradient(135deg, #180828 0%, #6366f1 100%)'
-                        ];
-
-                        return (
-                          <div 
-                            key={card.id}
-                            onClick={() => { setSelectedCardId(card.id); setPayoffAmount(''); }}
-                            style={{
-                              background: 'var(--bg-card)',
-                              border: isSelected ? '1px solid var(--accent)' : '1px solid var(--border)',
-                              borderRadius: '16px',
-                              padding: '1.25rem',
-                              cursor: 'pointer',
-                              boxShadow: isSelected ? '0 12px 30px rgba(79, 70, 229, 0.08)' : 'var(--shadow-sm)',
-                              transform: isSelected ? 'scale(1.02)' : 'scale(1)',
-                              transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                              display: 'flex',
-                              flexDirection: 'column',
-                              gap: '1rem',
-                              position: 'relative',
-                              overflow: 'hidden'
-                            }}
-                          >
-                            {/* Selected highlight line */}
-                            {isSelected && (
-                              <div style={{ position: 'absolute', top: 0, bottom: 0, left: 0, width: 4, background: 'var(--accent)' }}/>
-                            )}
-
-                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                                <div style={{
-                                  width: '36px',
-                                  height: '24px',
-                                  borderRadius: '4px',
-                                  background: grads[idx % grads.length],
-                                  color: 'rgba(255,255,255,0.8)',
-                                  fontSize: '0.55rem',
-                                  fontWeight: 800,
-                                  display: 'flex',
-                                  alignItems: 'center',
-                                  justifyContent: 'center',
-                                  letterSpacing: '0.5px'
-                                }}>
-                                  *{card.cardNumber.slice(-4)}
-                                </div>
-                                <div>
-                                  <h4 style={{ fontWeight: 800, fontSize: '0.95rem', color: 'var(--text-primary)', margin: 0 }}>{card.bankName}</h4>
-                                  <span style={{ fontSize: '0.7rem', color: 'var(--text-secondary)', fontWeight: 600 }}>{card.cardName}</span>
-                                </div>
-                              </div>
-
-                              <span style={{ 
-                                fontSize: '0.65rem', 
-                                fontWeight: 800, 
-                                color: healthColor, 
-                                background: healthColor + '10', 
-                                padding: '3px 8px', 
-                                borderRadius: '99px',
-                                textTransform: 'uppercase'
-                              }}>
-                                {util}% Util
-                              </span>
-                            </div>
-
-                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', borderTop: '1px solid var(--border)', paddingTop: '0.75rem' }}>
-                              <div>
-                                <div style={{ fontSize: '0.6rem', color: 'var(--text-muted)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.5px' }}>Outstanding</div>
-                                <div style={{ fontSize: '1.1rem', fontWeight: 900, color: parseFloat(card.outstanding) > 0 ? 'var(--red)' : 'var(--text-primary)' }}>{fmt(card.outstanding)}</div>
-                              </div>
-                              <div style={{ textAlign: 'right' }}>
-                                <div style={{ fontSize: '0.6rem', color: 'var(--text-muted)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.5px' }}>Available</div>
-                                <div style={{ fontSize: '1rem', fontWeight: 800, color: 'var(--text-primary)' }}>{fmt(card.limit - card.outstanding)}</div>
-                              </div>
-                            </div>
-                          </div>
-                        );
-                      })}
-                    </div>
-
-                    {/* Right Column: Premium Active Card Hub */}
-                    {activeCard && (() => {
-                      const util = activeCard.limit > 0 ? ((activeCard.outstanding / activeCard.limit) * 100).toFixed(0) : 0;
                       let healthColor = "var(--green)";
-                      let healthText = "Optimal";
+                      let healthBg = "var(--green-bg)";
                       if (util >= 30 && util <= 50) {
                         healthColor = "var(--amber)";
-                        healthText = "Caution";
+                        healthBg = "var(--amber-bg)";
                       } else if (util > 50) {
                         healthColor = "var(--red)";
-                        healthText = "Critical";
+                        healthBg = "var(--red-bg)";
                       }
 
-                      // Progress Ring Math
-                      const radius = 34;
-                      const circumference = 2 * Math.PI * radius;
-                      const offset = circumference - (Math.min(util, 100) / 100) * circumference;
+                      const getOrdinal = (n) => {
+                        const s = ["th", "st", "nd", "rd"],
+                              v = n % 100;
+                        return n + (s[(v - 20) % 10] || s[v] || s[0]);
+                      };
+
+                      const dueOrdinal = card.dueDate ? getOrdinal(parseInt(card.dueDate)) : "N/A";
+                      const statementOrdinal = card.statementDate ? getOrdinal(parseInt(card.statementDate)) : "N/A";
 
                       return (
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '1.75rem' }}>
-                          
-                          {/* 1. Neon Glassmorphic Credit Card */}
-                          <div style={{
-                            background: 'linear-gradient(135deg, rgba(30, 27, 75, 0.95) 0%, rgba(15, 23, 42, 0.98) 50%, rgba(88, 28, 135, 0.95) 100%)',
-                            borderRadius: '24px',
-                            padding: '2rem',
-                            color: 'white',
-                            position: 'relative',
-                            boxShadow: '0 20px 40px rgba(0,0,0,0.3), inset 0 1px 1px rgba(255,255,255,0.1)',
-                            height: '210px',
-                            display: 'flex',
-                            flexDirection: 'column',
-                            justifyContent: 'space-between',
-                            border: '1px solid rgba(255,255,255,0.12)',
-                            overflow: 'hidden'
-                          }}>
-                            {/* Holographic light reflection */}
-                            <div style={{ position: 'absolute', top: '-50%', left: '-50%', right: '-50%', bottom: '-50%', background: 'radial-gradient(circle at 30% 30%, rgba(255,255,255,0.08) 0%, transparent 60%)', pointerEvents: 'none' }}/>
-
-                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', zIndex: 1 }}>
-                              <div>
-                                <div style={{ fontSize: '1.4rem', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '-0.5px' }}>{activeCard.bankName}</div>
-                                <div style={{ fontSize: '0.8rem', opacity: 0.6, fontWeight: 500 }}>{activeCard.cardName}</div>
-                              </div>
-                              {/* Chip */}
-                              <div style={{
-                                width: '48px',
-                                height: '34px',
-                                borderRadius: '8px',
-                                background: 'linear-gradient(135deg, #FFE29A 0%, #D4AF37 50%, #FFE29A 100%)',
-                                position: 'relative',
-                                boxShadow: 'inset 0 1px 2px rgba(0,0,0,0.4)'
-                              }}>
-                                <div style={{ position: 'absolute', top: 4, bottom: 4, left: 16, right: 16, borderLeft: '1px solid rgba(0,0,0,0.2)', borderRight: '1px solid rgba(0,0,0,0.2)' }}/>
-                                <div style={{ position: 'absolute', left: 4, right: 4, top: 11, bottom: 11, borderTop: '1px solid rgba(0,0,0,0.2)', borderBottom: '1px solid rgba(0,0,0,0.2)' }}/>
-                              </div>
+                        <div 
+                          key={card.id} 
+                          className="panel" 
+                          style={{ 
+                            padding: '1.5rem', 
+                            display: 'flex', 
+                            flexDirection: 'column', 
+                            gap: '1.25rem',
+                            borderTop: `4px solid ${healthColor}`
+                          }}
+                        >
+                          {/* Card Header Info */}
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                            <div>
+                              <h3 style={{ fontSize: '1.15rem', fontWeight: 800, color: 'var(--text-primary)', margin: 0 }}>{card.bankName}</h3>
+                              <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', fontWeight: 600 }}>{card.cardName} (****{card.cardNumber.slice(-4)})</span>
                             </div>
+                            <span style={{ fontSize: '0.65rem', fontWeight: 800, color: healthColor, background: healthBg, padding: '3px 8px', borderRadius: '99px', textTransform: 'uppercase' }}>
+                              {util}% Utilized
+                            </span>
+                          </div>
 
-                            <div style={{ fontSize: '1.4rem', letterSpacing: '4px', fontFamily: 'monospace', textShadow: '0 2px 4px rgba(0,0,0,0.6)', fontWeight: 600, zIndex: 1 }}>
-                              ••••  ••••  ••••  {activeCard.cardNumber}
+                          {/* Progress Bar */}
+                          <div className="progress-bar-wrap" style={{ height: 6, background: 'rgba(0,0,0,0.06)', borderRadius: 99 }}>
+                            <div style={{ height: '100%', background: healthColor, width: `${Math.min(util, 100)}%`, borderRadius: 99 }}/>
+                          </div>
+
+                          {/* Status Details */}
+                          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '10px', background: 'var(--bg-base)', padding: '10px 12px', borderRadius: 'var(--r-md)', border: '1px solid var(--border)' }}>
+                            <div>
+                              <span style={{ fontSize: '0.6rem', color: 'var(--text-muted)', fontWeight: 700, textTransform: 'uppercase', display: 'block', marginBottom: 2 }}>Limit</span>
+                              <span style={{ fontSize: '0.85rem', fontWeight: 800, color: 'var(--text-primary)' }}>{fmt(card.limit)}</span>
                             </div>
-
-                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', zIndex: 1 }}>
-                              <div>
-                                <div style={{ fontSize: '0.55rem', opacity: 0.5, textTransform: 'uppercase', letterSpacing: '1px' }}>Cardholder</div>
-                                <div style={{ fontSize: '0.85rem', fontWeight: 700, letterSpacing: '0.2px' }}>Finance Buddy</div>
-                              </div>
-                              <span style={{ fontSize: '1rem', fontWeight: 900, opacity: 0.8, letterSpacing: 0.5 }}>VISA</span>
+                            <div>
+                              <span style={{ fontSize: '0.6rem', color: 'var(--text-muted)', fontWeight: 700, textTransform: 'uppercase', display: 'block', marginBottom: 2 }}>Outstanding</span>
+                              <span style={{ fontSize: '0.85rem', fontWeight: 805, color: parseFloat(card.outstanding) > 0 ? 'var(--red)' : 'var(--text-primary)' }}>{fmt(card.outstanding)}</span>
+                            </div>
+                            <div style={{ textAlign: 'right' }}>
+                              <span style={{ fontSize: '0.6rem', color: 'var(--text-muted)', fontWeight: 700, textTransform: 'uppercase', display: 'block', marginBottom: 2 }}>Available</span>
+                              <span style={{ fontSize: '0.85rem', fontWeight: 800, color: 'var(--green)' }}>{fmt(card.limit - card.outstanding)}</span>
                             </div>
                           </div>
 
-                          {/* 2. Visual Progress Hub (Utilization Gauge + Calendar) */}
-                          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.2fr', gap: '1.5rem' }}>
-                            {/* Circular progress ring widget */}
-                            <div className="panel" style={{ padding: '1.25rem', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '0.75rem' }}>
-                              <div style={{ position: 'relative', width: 80, height: 80 }}>
-                                <svg style={{ width: '100%', height: '100%', transform: 'rotate(-90deg)' }}>
-                                  <circle cx="40" cy="40" r={radius} stroke="var(--border)" strokeWidth="6" fill="transparent"/>
-                                  <circle 
-                                    cx="40" 
-                                    cy="40" 
-                                    r={radius} 
-                                    stroke={healthColor} 
-                                    strokeWidth="6" 
-                                    fill="transparent"
-                                    strokeDasharray={circumference}
-                                    strokeDashoffset={offset}
-                                    strokeLinecap="round"
-                                    style={{ transition: 'stroke-dashoffset 0.5s ease-in-out' }}
-                                  />
-                                </svg>
-                                <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column' }}>
-                                  <span style={{ fontSize: '1.15rem', fontWeight: 900, color: 'var(--text-primary)', lineHeight: 1 }}>{util}%</span>
-                                </div>
-                              </div>
-                              <div style={{ textAlign: 'center' }}>
-                                <div style={{ fontSize: '0.65rem', fontWeight: 800, color: 'var(--text-muted)', textTransform: 'uppercase' }}>Card Health</div>
-                                <div style={{ fontSize: '0.8rem', fontWeight: 800, color: healthColor }}>{healthText} Status</div>
-                              </div>
-                            </div>
-
-                            {/* iOS Style Calendar Widget */}
-                            <div className="panel" style={{ padding: '1.25rem', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-                              <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', borderRight: '1px solid var(--border)', paddingRight: '0.5rem' }}>
-                                <span style={{ fontSize: '0.65rem', fontWeight: 800, color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: 6 }}>Stmt Date</span>
-                                <span style={{ fontSize: '1.5rem', fontWeight: 900, color: 'var(--text-primary)', lineHeight: 1 }}>{activeCard.statementDate}</span>
-                                <span style={{ fontSize: '0.7rem', color: 'var(--text-secondary)', fontWeight: 600, marginTop: 4 }}>of month</span>
-                              </div>
-                              <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', paddingLeft: '0.25rem' }}>
-                                <span style={{ fontSize: '0.65rem', fontWeight: 800, color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: 6 }}>Due Date</span>
-                                <span style={{ fontSize: '1.5rem', fontWeight: 900, color: 'var(--red)', lineHeight: 1 }}>{activeCard.dueDate}</span>
-                                <span style={{ fontSize: '0.7rem', color: 'var(--text-secondary)', fontWeight: 600, marginTop: 4 }}>of month</span>
-                              </div>
-                            </div>
+                          {/* Due Dates */}
+                          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', fontSize: '0.78rem', color: 'var(--text-secondary)', fontWeight: 600 }}>
+                            <div>Statement: <strong style={{ color: 'var(--text-primary)' }}>{statementOrdinal}</strong></div>
+                            <div style={{ textAlign: 'right' }}>Pay Due: <strong style={{ color: 'var(--red)' }}>{dueOrdinal}</strong></div>
                           </div>
 
-                          {/* 3. Inline Payment and Management Panel */}
-                          <div className="panel" style={{ padding: '1.5rem', display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                              <div>
-                                <span style={{ fontSize: '0.65rem', fontWeight: 800, color: 'var(--text-muted)', textTransform: 'uppercase' }}>Card Limit Breakdown</span>
-                                <div style={{ display: 'flex', alignItems: 'baseline', gap: 6, marginTop: 4 }}>
-                                  <span style={{ fontSize: '1.5rem', fontWeight: 900, color: 'var(--text-primary)' }}>{fmt(activeCard.limit)}</span>
-                                  <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 600 }}>Total Limit</span>
-                                </div>
+                          {/* Inline payment handler */}
+                          {parseFloat(card.outstanding) > 0 && (
+                            <div style={{ display: 'flex', gap: '8px', borderTop: '1px solid var(--border)', paddingTop: '1rem' }}>
+                              <div style={{ position: 'relative', flex: 1 }}>
+                                <span style={{ position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)', fontWeight: 700, color: 'var(--text-muted)', fontSize: '0.8rem' }}>₹</span>
+                                <input 
+                                  type="number" 
+                                  placeholder="Repay amount"
+                                  id={`pay-input-${card.id}`}
+                                  style={{
+                                    width: '100%',
+                                    padding: '8px 10px 8px 20px',
+                                    background: 'var(--bg-base)',
+                                    border: '1px solid var(--border)',
+                                    borderRadius: '6px',
+                                    fontSize: '0.85rem',
+                                    fontWeight: 700
+                                  }}
+                                />
                               </div>
-                              <div style={{ textAlign: 'right' }}>
-                                <span style={{ fontSize: '0.65rem', fontWeight: 800, color: 'var(--text-muted)', textTransform: 'uppercase' }}>Available Limit</span>
-                                <div style={{ fontSize: '1.25rem', fontWeight: 800, color: 'var(--green)', marginTop: 4 }}>{fmt(activeCard.limit - activeCard.outstanding)}</div>
-                              </div>
-                            </div>
-
-                            {/* Inline payment form — no popup prompt */}
-                            {parseFloat(activeCard.outstanding) > 0 ? (
-                              <div style={{ background: 'var(--bg-base)', border: '1px solid var(--border)', borderRadius: '12px', padding: '1rem', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-                                <div style={{ fontSize: '0.75rem', fontWeight: 800, color: 'var(--text-secondary)' }}>Log Repayment Balance</div>
-                                <div style={{ display: 'flex', gap: '8px' }}>
-                                  <div style={{ position: 'relative', flex: 1 }}>
-                                    <span style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', fontWeight: 700, color: 'var(--text-muted)' }}>₹</span>
-                                    <input 
-                                      type="number" 
-                                      placeholder="0.00"
-                                      value={payoffAmount}
-                                      onChange={e => setPayoffAmount(e.target.value)}
-                                      style={{
-                                        width: '100%',
-                                        padding: '10px 12px 10px 24px',
-                                        background: 'var(--bg-card)',
-                                        border: '1px solid var(--border)',
-                                        borderRadius: '8px',
-                                        fontSize: '0.9rem',
-                                        fontWeight: 700
-                                      }}
-                                    />
-                                  </div>
-                                  <button
-                                    className="btn btn-primary"
-                                    style={{ height: '40px', padding: '0 16px', borderRadius: '8px' }}
-                                    onClick={() => {
-                                      const amt = parseFloat(payoffAmount);
-                                      if (amt > 0) {
-                                        setCreditCards(p => p.map(c => c.id === activeCard.id ? { ...c, outstanding: Math.max(0, c.outstanding - amt) } : c));
-                                        setPayoffAmount('');
-                                      } else {
-                                        alert('Enter a valid payment amount.');
-                                      }
-                                    }}
-                                  >
-                                    Pay Outstanding
-                                  </button>
-                                </div>
-                              </div>
-                            ) : (
-                              <div style={{ background: 'rgba(16, 185, 129, 0.05)', border: '1px dashed rgba(16, 185, 129, 0.2)', borderRadius: '12px', padding: '1rem', textAlign: 'center', fontSize: '0.8rem', color: 'var(--green)', fontWeight: 750 }}>
-                                🎉 Card is fully settled! No outstanding balance.
-                              </div>
-                            )}
-
-                            {/* Clean Action Row */}
-                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '1px solid var(--border)', paddingTop: '1rem', marginTop: '0.25rem' }}>
-                              <button 
-                                onClick={() => openModal('Edit Credit Card', 'card', activeCard)}
-                                style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: '0.8rem', fontWeight: 800, color: 'var(--text-secondary)', cursor: 'pointer' }}
+                              <button
+                                className="btn btn-primary"
+                                style={{ height: '34px', padding: '0 12px', borderRadius: '6px', fontSize: '0.8rem' }}
+                                onClick={() => {
+                                  const input = document.getElementById(`pay-input-${card.id}`);
+                                  const val = parseFloat(input?.value);
+                                  if (val > 0) {
+                                    setCreditCards(p => p.map(c => c.id === card.id ? { ...c, outstanding: Math.max(0, c.outstanding - val) } : c));
+                                    if (input) input.value = '';
+                                  } else {
+                                    alert('Enter payment amount.');
+                                  }
+                                }}
                               >
-                                <Edit3 size={14}/> Edit Card Details
-                              </button>
-                              <button 
-                                onClick={() => { if (confirm(`Remove ${activeCard.bankName} CC?`)) setCreditCards(p => p.filter(c => c.id !== activeCard.id)); }}
-                                style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: '0.8rem', fontWeight: 800, color: 'var(--red)', cursor: 'pointer' }}
-                              >
-                                <Trash2 size={14}/> Delete Card
+                                Pay
                               </button>
                             </div>
+                          )}
 
+                          {/* Actions */}
+                          <div style={{ display: 'flex', justifyContent: 'space-between', borderTop: parseFloat(card.outstanding) > 0 ? 'none' : '1px solid var(--border)', paddingTop: parseFloat(card.outstanding) > 0 ? '0' : '1rem' }}>
+                            <button 
+                              onClick={() => openModal('Edit Credit Card', 'card', card)}
+                              style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: '0.78rem', fontWeight: 800, color: 'var(--text-secondary)', cursor: 'pointer' }}
+                            >
+                              <Edit3 size={13}/> Edit Card
+                            </button>
+                            <button 
+                              onClick={() => { if (confirm(`Remove ${card.bankName} CC?`)) setCreditCards(p => p.filter(c => c.id !== card.id)); }}
+                              style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: '0.78rem', fontWeight: 800, color: 'var(--red)', cursor: 'pointer' }}
+                            >
+                              <Trash2 size={13}/> Delete
+                            </button>
                           </div>
 
                         </div>
                       );
-                    })()}
-
+                    })}
                   </div>
                 ) : (
                   <div className="empty-state">No credit cards added.</div>
@@ -945,6 +776,7 @@ export default function App() {
               </div>
             );
           })()}
+
 
 
 
