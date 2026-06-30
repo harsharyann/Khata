@@ -134,7 +134,7 @@ export default function App() {
   const ccDebt             = creditCards.reduce((s, c) => s + c.outstanding, 0);
   const ccLimit            = creditCards.reduce((s, c) => s + c.limit, 0);
   const ccUtil             = ccLimit > 0 ? ((ccDebt / ccLimit) * 100).toFixed(1) : 0;
-  const trueNetWorth       = totalWealth + lentOut - ccDebt;
+
 
   const navItems = [
     { id: 'home',         label: 'Home' },
@@ -193,10 +193,10 @@ export default function App() {
   };
 
   const doughnutData = {
-    labels: ['Banks & Cash', 'Lent Out', 'Credit Debt'],
+    labels: ['Banks & Cash', 'Lent Out'],
     datasets: [{
-      data: [totalWealth, lentOut, ccDebt],
-      backgroundColor: ['#3B82F6', '#10B981', '#EF4444'],
+      data: [totalWealth, lentOut],
+      backgroundColor: ['#3B82F6', '#10B981'],
       borderWidth: 0,
       hoverOffset: 4
     }]
