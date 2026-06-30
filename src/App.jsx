@@ -48,9 +48,7 @@ const DUMMY_BORROWERS = [
   { id: 301, name: 'Rohan Sharma', principal: 10000, repaid: 2000, date: new Date().toISOString().split('T')[0] }
 ];
 
-const DUMMY_SAMITIS = [
-  { id: 401, receiverName: 'Mohit Kumar', dailyAmount: 500, year: new Date().getFullYear(), month: new Date().getMonth() }
-];
+
 
 // ─────────────────────────────────────────────
 //   HELPERS
@@ -75,7 +73,7 @@ export default function App() {
   const [cash,        setCash]        = useState(() => parseFloat(localStorage.getItem('fi_csh_v2')  ?? DEFAULT_CASH));
   const [creditCards, setCreditCards] = useState(() => JSON.parse(localStorage.getItem('fi_crd_v2')  || 'null') ?? DUMMY_CARDS);
   const [borrowers,   setBorrowers]   = useState(() => JSON.parse(localStorage.getItem('fi_brw_v2')  || 'null') ?? DUMMY_BORROWERS);
-  const [samitis,     setSamitis]     = useState(() => JSON.parse(localStorage.getItem('fi_sam_v2')  || 'null') ?? DUMMY_SAMITIS);
+
 
   // Persist
   useEffect(() => { localStorage.setItem('fi_inc_v2', JSON.stringify(incomes)); },     [incomes]);
@@ -84,7 +82,7 @@ export default function App() {
   useEffect(() => { localStorage.setItem('fi_csh_v2', cash.toString()); },             [cash]);
   useEffect(() => { localStorage.setItem('fi_crd_v2', JSON.stringify(creditCards)); }, [creditCards]);
   useEffect(() => { localStorage.setItem('fi_brw_v2', JSON.stringify(borrowers)); },   [borrowers]);
-  useEffect(() => { localStorage.setItem('fi_sam_v2', JSON.stringify(samitis)); },     [samitis]);
+
 
   // Modal state
   const [modal,   setModal]   = useState({ open: false, title: '', type: '', item: null });
@@ -1077,32 +1075,7 @@ export default function App() {
                 </form>
               )}
 
-              {/* Samiti */}
-              {modal.type === 'samiti' && (
-                <form className="form-grid" onSubmit={e => {
-                  e.preventDefault();
-                  const f = e.target;
-                  const name = f.name.value, amt = parseFloat(f.amt.value) || 0;
-                  if (name && amt > 0) {
-                    if (modal.item) {
-                      setSamitis(p => p.map(s => s.id === modal.item.id ? { ...s, receiverName: name, dailyAmount: amt } : s));
-                    } else {
-                      setSamitis(p => [...p, { id: Date.now(), receiverName: name, dailyAmount: amt, year: month.getFullYear(), month: month.getMonth() }]);
-                    }
-                    closeModal();
-                  }
-                }}>
-                  <div className="form-group">
-                    <label>Receiver Name</label>
-                    <input name="name" type="text" required placeholder="e.g. Rajesh Bhai" defaultValue={modal.item?.receiverName || ''}/>
-                  </div>
-                  <div className="form-group">
-                    <label>Daily Deposit (₹)</label>
-                    <input name="amt" type="number" required placeholder="e.g. 500" min="1" defaultValue={modal.item?.dailyAmount || ''}/>
-                  </div>
-                  <button type="submit" className="btn btn-primary">{modal.item ? 'Update Samiti' : 'Add Samiti'}</button>
-                </form>
-              )}
+
 
             </div>
           </div>
