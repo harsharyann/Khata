@@ -1945,7 +1945,12 @@ export default function App() {
                   </div>
                   <div className="form-group">
                     <label>Daily Amount (₹)</label>
-                    <input name="daily_amount" type="number" required placeholder="0" min="1" defaultValue={modal.item?.daily_amount || ''}/>
+                    <input name="daily_amount" type="number" required placeholder="0" min="1" defaultValue={modal.item?.daily_amount || ''} onChange={e => {
+                      const form = e.target.form;
+                      const d = parseFloat(e.target.value) || 0;
+                      const t = parseInt(form.tenure_months.value) || 0;
+                      if (d && t) form.maturity_amount.value = d * 30 * t;
+                    }}/>
                   </div>
                   <div className="form-group">
                     <label>Start Date</label>
@@ -1953,7 +1958,12 @@ export default function App() {
                   </div>
                   <div className="form-group">
                     <label>Tenure (Months)</label>
-                    <input name="tenure_months" type="number" required placeholder="12" min="1" defaultValue={modal.item?.tenure_months || ''}/>
+                    <input name="tenure_months" type="number" required placeholder="12" min="1" defaultValue={modal.item?.tenure_months || ''} onChange={e => {
+                      const form = e.target.form;
+                      const d = parseFloat(form.daily_amount.value) || 0;
+                      const t = parseInt(e.target.value) || 0;
+                      if (d && t) form.maturity_amount.value = d * 30 * t;
+                    }}/>
                   </div>
                   <div className="form-group">
                     <label>Expected Maturity (₹)</label>
