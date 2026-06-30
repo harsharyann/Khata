@@ -41,7 +41,7 @@ const DUMMY_BANKS = [
 ];
 
 const DUMMY_CARDS = [
-  { id: 201, bankName: 'ICICI', cardName: 'Amazon Pay', cardNumber: '9876', limit: 150000, outstanding: 24000 }
+  { id: 201, bankName: 'ICICI', cardName: 'Amazon Pay', cardNumber: '9876', limit: 150000, outstanding: 24000, statementDate: '15', dueDate: '5' }
 ];
 
 const DUMMY_BORROWERS = [
@@ -377,9 +377,9 @@ export default function App() {
                   <thead>
                     <tr>
                       <th>Date</th>
-                      <th>Daily Income</th>
-                      <th>Daily Expense</th>
-                      <th>Net Balance</th>
+                      <th>Daily Income (₹)</th>
+                      <th>Daily Expense (₹)</th>
+                      <th>Net Balance (₹)</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -576,7 +576,7 @@ export default function App() {
                         <tr>
                           <th>Date</th>
                           <th>Category</th>
-                          <th>Amount</th>
+                          <th>Amount (₹)</th>
                           <th style={{ textAlign: 'right' }}>Actions</th>
                         </tr>
                       </thead>
@@ -617,7 +617,7 @@ export default function App() {
                         <tr>
                           <th>Date</th>
                           <th>Category</th>
-                          <th>Amount</th>
+                          <th>Amount (₹)</th>
                           <th style={{ textAlign: 'right' }}>Actions</th>
                         </tr>
                       </thead>
@@ -758,57 +758,106 @@ export default function App() {
                 </div>
               </div>
 
-              <div className="stat-grid" style={{ marginBottom: '1.75rem' }}>
-                <StatCard icon={<CreditCard size={18}/>}   color="blue"   label="Total Limit"       value={fmt(ccLimit)}/>
+              <div className="stat-grid" style={{ marginBottom: '1.75rem', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))' }}>
+                <StatCard icon={<CreditCard size={18}/>}   color="purple" label="Total Cards"       value={String(creditCards.length)}/>
+                <StatCard icon={<CheckCircle size={18}/>}  color="blue"   label="Total Limit"       value={fmt(ccLimit)}/>
                 <StatCard icon={<AlertTriangle size={18}/>} color="red"   label="Total Outstanding" value={fmt(ccDebt)} valueColor="red" sub={`${ccUtil}% utilized`}/>
                 <StatCard icon={<CheckCircle size={18}/>}  color="green"  label="Available Credit"  value={fmt(ccLimit - ccDebt)} valueColor="green"/>
               </div>
 
-              <div className="item-grid" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))' }}>
+              <div className="item-grid" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))' }}>
                 {creditCards.map((card, idx) => {
                   const util = card.limit > 0 ? ((card.outstanding / card.limit) * 100).toFixed(0) : 0;
+                  
+                  let healthLabel = "Excellent";
+                  let healthColor = "var(--green)";
+                  let healthBg = "var(--green-bg)";
+                  if (util >= 30 && util <= 50) {
+                    healthLabel = "Moderate";
+                    healthColor = "var(--amber)";
+                    healthBg = "var(--amber-bg)";
+                  } else if (util > 50) {
+                    healthLabel = "High Utilization";
+                    healthColor = "var(--red)";
+                    healthBg = "var(--red-bg)";
+                  }
+
+                  const getOrdinal = (n) => {
+                    const s = ["th", "st", "nd", "rd"],
+                          v = n % 100;
+                    return n + (s[(v - 20) % 10] || s[v] || s[0]);
+                  };
+
+                  const dueOrdinal = card.dueDate ? getOrdinal(parseInt(card.dueDate)) : "N/A";
+                  const statementOrdinal = card.statementDate ? getOrdinal(parseInt(card.statementDate)) : "N/A";
+
                   return (
-                    <div key={card.id} className={`metallic-card ${['gold', 'silver', 'platinum'][idx % 3]}`}>
-                      <div style={{ position: 'absolute', top: 12, right: 12, zIndex: 10, display: 'flex', gap: 6 }}>
-                        <button className="btn-icon" style={{ background: 'rgba(255,255,255,0.2)' }} onClick={() => openModal('Edit Credit Card', 'card', card)}>
-                          <Edit3 size={13} color="white"/>
+                    <div key={card.id} className="cred-card" style={{ position: 'relative', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', background: 'var(--bg-card)', border: '1px solid var(--border)', boxShadow: 'var(--shadow-md)', borderRadius: 'var(--r-lg)', padding: '1.5rem', overflow: 'hidden' }}>
+                      <div style={{ position: 'absolute', top: 16, right: 16, zIndex: 10, display: 'flex', gap: 6 }}>
+                        <button className="btn-icon" style={{ background: 'var(--bg-hover)' }} onClick={() => openModal('Edit Credit Card', 'card', card)}>
+                          <Edit3 size={13} color="var(--text-primary)"/>
                         </button>
-                        <button className="btn-icon danger" style={{ background: 'rgba(220,38,38,0.2)' }}
-                          onClick={() => { if (confirm(`Remove ${card.bankName} - ${card.cardName}?`)) setCreditCards(p => p.filter(c => c.id !== card.id)); }}>
-                          <Trash2 size={13} color="white"/>
+                        <button className="btn-icon danger" onClick={() => { if (confirm(`Remove ${card.bankName} - ${card.cardName}?`)) setCreditCards(p => p.filter(c => c.id !== card.id)); }}>
+                          <Trash2 size={13}/>
                         </button>
                       </div>
 
-                      <div style={{ zIndex: 1, position: 'relative' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 14 }}>
-                          <CreditCard size={24} style={{ opacity: 0.8 }}/>
+                      <div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>
+                          <div style={{ background: 'var(--accent-soft)', padding: 10, borderRadius: 10 }}><CreditCard size={20} color="var(--accent)"/></div>
                           <div>
-                            <div style={{ fontWeight: 800, fontSize: '1.1rem', color: 'white' }}>{card.bankName}</div>
-                            <div style={{ fontSize: '0.8rem', opacity: 0.8 }}>{card.cardName}</div>
+                            <div style={{ fontWeight: 800, fontSize: '1.15rem', color: 'var(--text-primary)' }}>{card.bankName}</div>
+                            <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>{card.cardName}</div>
                           </div>
                         </div>
-                        <div style={{ fontSize: '1.2rem', letterSpacing: '4px', opacity: 0.9, fontFamily: 'monospace', marginBottom: 12 }}>**** **** **** {card.cardNumber}</div>
+
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+                          <div style={{ fontSize: '1.05rem', letterSpacing: '2px', color: 'var(--text-muted)', fontFamily: 'monospace' }}>**** **** **** {card.cardNumber}</div>
+                          <span style={{ fontSize: '0.7rem', fontWeight: 700, color: healthColor, background: healthBg, padding: '4px 10px', borderRadius: 99, textTransform: 'uppercase', letterSpacing: 0.5 }}>
+                            {healthLabel}
+                          </span>
+                        </div>
                       </div>
 
-                      <div style={{ background: 'rgba(0,0,0,0.3)', borderRadius: 10, padding: '16px', zIndex: 1, position: 'relative', marginTop: 12 }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.76rem', marginBottom: 8 }}>
-                          <span style={{ color: 'rgba(255,255,255,0.7)', fontWeight: 600 }}>UTILIZED: {util}%</span>
-                          <span style={{ color: 'white', fontWeight: 700 }}>AVAIL: {fmt(card.limit - card.outstanding)}</span>
+                      <div style={{ background: 'var(--bg-hover)', borderRadius: 'var(--r-md)', padding: '12px 16px', border: '1px solid var(--border)', marginBottom: 14 }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.72rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 6 }}>
+                          <span style={{ color: 'var(--text-secondary)' }}>Utilized: {util}%</span>
+                          <span style={{ color: 'var(--text-primary)' }}>Available: {fmt(card.limit - card.outstanding)}</span>
                         </div>
-                        <div className="progress-bar-wrap" style={{ marginBottom: 12, height: 6, background: 'rgba(255,255,255,0.2)' }}>
-                          <div style={{ height: '100%', background: util > 80 ? '#EF4444' : '#10B981', width: `${util}%`, borderRadius: 99 }}/>
+                        <div className="progress-bar-wrap" style={{ height: 6, background: 'rgba(0,0,0,0.06)', borderRadius: 99, marginBottom: 12, overflow: 'hidden' }}>
+                          <div style={{ height: '100%', background: healthColor, width: `${Math.min(util, 100)}%` }}/>
                         </div>
+                        
                         <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                           <div>
-                            <div style={{ color: 'rgba(255,255,255,0.6)', fontSize: '0.65rem', fontWeight: 700, letterSpacing: 1, marginBottom: 2 }}>LIMIT</div>
-                            <div style={{ color: 'white', fontWeight: 800, fontSize: '1rem' }}>{fmt(card.limit)}</div>
+                            <div style={{ color: 'var(--text-muted)', fontSize: '0.6rem', fontWeight: 700, letterSpacing: 0.5 }}>LIMIT</div>
+                            <div style={{ color: 'var(--text-primary)', fontWeight: 800, fontSize: '0.95rem' }}>{fmt(card.limit)}</div>
                           </div>
                           <div style={{ textAlign: 'right' }}>
-                            <div style={{ color: 'rgba(255,255,255,0.6)', fontSize: '0.65rem', fontWeight: 700, letterSpacing: 1, marginBottom: 2 }}>OUTSTANDING</div>
-                            <div style={{ color: util > 80 ? '#FCA5A5' : 'white', fontWeight: 900, fontSize: '1rem' }}>{fmt(card.outstanding)}</div>
+                            <div style={{ color: 'var(--text-muted)', fontSize: '0.6rem', fontWeight: 700, letterSpacing: 0.5 }}>OUTSTANDING</div>
+                            <div style={{ color: healthColor, fontWeight: 900, fontSize: '0.95rem' }}>{fmt(card.outstanding)}</div>
                           </div>
                         </div>
                       </div>
+
+                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, borderTop: '1px dashed var(--border)', paddingTop: 12 }}>
+                        <div>
+                          <div style={{ color: 'var(--text-muted)', fontSize: '0.65rem', fontWeight: 700 }}>STATEMENT DATE</div>
+                          <div style={{ color: 'var(--text-primary)', fontSize: '0.85rem', fontWeight: 700 }}>{statementOrdinal} of month</div>
+                        </div>
+                        <div style={{ textAlign: 'right' }}>
+                          <div style={{ color: 'var(--text-muted)', fontSize: '0.65rem', fontWeight: 700 }}>DUE DATE</div>
+                          <div style={{ color: 'var(--red)', fontSize: '0.85rem', fontWeight: 800 }}>{dueOrdinal} of month</div>
+                        </div>
+                      </div>
+
+                      {card.dueDate && (
+                        <div style={{ marginTop: 14, background: 'var(--red-bg)', border: '1px solid rgba(244, 63, 94, 0.15)', borderRadius: 'var(--r-sm)', padding: '8px 10px', display: 'flex', alignItems: 'center', gap: 6, justifyContent: 'center' }}>
+                          <span style={{ fontSize: '0.68rem', fontWeight: 900, color: 'var(--red)', letterSpacing: 0.2, textAlign: 'center', textTransform: 'uppercase' }}>
+                            ⚠️ MUST PAY BY {dueOrdinal} AT ALL COSTS!
+                          </span>
+                        </div>
+                      )}
                     </div>
                   );
                 })}
@@ -1113,12 +1162,14 @@ export default function App() {
                 <form className="form-grid" onSubmit={e => {
                   e.preventDefault();
                   const f = e.target;
-                  const bankName = f.bank.value, cardName = f.cardName.value, cardNumber = f.num.value, limit = parseFloat(f.limit.value) || 0, outstanding = parseFloat(f.outstanding.value) || 0;
+                  const bankName = f.bank.value, cardName = f.cardName.value, cardNumber = f.num.value, 
+                        limit = parseFloat(f.limit.value) || 0, outstanding = parseFloat(f.outstanding.value) || 0,
+                        statementDate = f.statementDate.value, dueDate = f.dueDate.value;
                   if (bankName && cardName && cardNumber && limit > 0) {
                     if (modal.item) {
-                      setCreditCards(p => p.map(c => c.id === modal.item.id ? { ...c, bankName, cardName, cardNumber, limit, outstanding } : c));
+                      setCreditCards(p => p.map(c => c.id === modal.item.id ? { ...c, bankName, cardName, cardNumber, limit, outstanding, statementDate, dueDate } : c));
                     } else {
-                      setCreditCards(p => [...p, { id: Date.now(), bankName, cardName, cardNumber, limit, outstanding }]);
+                      setCreditCards(p => [...p, { id: Date.now(), bankName, cardName, cardNumber, limit, outstanding, statementDate, dueDate }]);
                     }
                     closeModal();
                   }
@@ -1138,6 +1189,14 @@ export default function App() {
                   <div className="form-group">
                     <label>Credit Limit (₹)</label>
                     <input name="limit" type="number" required placeholder="0" min="1" defaultValue={modal.item?.limit || ''}/>
+                  </div>
+                  <div className="form-group">
+                    <label>Statement Day (1-31)</label>
+                    <input name="statementDate" type="number" min="1" max="31" required placeholder="e.g. 15" defaultValue={modal.item?.statementDate || ''}/>
+                  </div>
+                  <div className="form-group">
+                    <label>Due Day (1-31)</label>
+                    <input name="dueDate" type="number" min="1" max="31" required placeholder="e.g. 5" defaultValue={modal.item?.dueDate || ''}/>
                   </div>
                   <div className="form-group full">
                     <label>Outstanding Balance (₹)</label>
