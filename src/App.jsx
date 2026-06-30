@@ -4,7 +4,7 @@ import {
   Users, CreditCard, Target, Calendar, Plus, Trash2,
   Edit3, Eye, CalendarCheck, ArrowRightLeft, X, Wallet,
   Building, CheckCircle, AlertTriangle, ChevronLeft, ChevronRight,
-  BarChart2, ArrowUpRight, ArrowDownRight, Menu
+  BarChart2, ArrowUpRight, ArrowDownRight, Menu, Loader
 } from 'lucide-react';
 
 import {
@@ -44,6 +44,7 @@ const fmtDate = (s) => new Date(s).toLocaleDateString('en-GB', { day: '2-digit',
 // ─────────────────────────────────────────────
 export default function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(() => sessionStorage.getItem('fi_auth') === 'true');
+  const [isUnlocking, setIsUnlocking] = useState(false);
   const [pinInput, setPinInput] = useState('');
   const [pinError, setPinError] = useState('');
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -54,8 +55,12 @@ export default function App() {
   const handleLogin = (e) => {
     e.preventDefault();
     if (pinInput === CORRECT_PIN) {
-      setIsAuthenticated(true);
-      sessionStorage.setItem('fi_auth', 'true');
+      setIsUnlocking(true);
+      setTimeout(() => {
+        setIsAuthenticated(true);
+        sessionStorage.setItem('fi_auth', 'true');
+        setIsUnlocking(false);
+      }, 500);
     } else {
       setPinError('Incorrect PIN');
       setPinInput('');
@@ -85,8 +90,13 @@ export default function App() {
               />
             </div>
             {pinError && <div style={{ color: 'var(--red)', fontSize: '0.85rem', marginBottom: '1rem', fontWeight: 800 }}>{pinError}</div>}
-            <button type="submit" className="btn btn-primary" style={{ width: '100%', justifyContent: 'center', height: '52px', fontSize: '1.05rem', borderRadius: '1rem' }}>
-              Unlock App
+            <button type="submit" disabled={isUnlocking} className="btn btn-primary" style={{ width: '100%', justifyContent: 'center', height: '52px', fontSize: '1.05rem', borderRadius: '1rem', opacity: isUnlocking ? 0.7 : 1, transition: 'all 0.2s' }}>
+              {isUnlocking ? (
+                <>
+                  <Loader size={18} className="spin" style={{ marginRight: 8 }} />
+                  Unlocking...
+                </>
+              ) : 'Unlock App'}
             </button>
           </form>
         </div>
