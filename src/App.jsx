@@ -642,14 +642,35 @@ export default function App() {
   if (!session) {
     return (
       <div className="auth-container">
+        {/* Animated Background Bubbles */}
+        <ul className="auth-bg-bubbles">
+          <li></li><li></li><li></li><li></li><li></li>
+          <li></li><li></li><li></li><li></li><li></li>
+        </ul>
+
         <div className="auth-card">
-          <div className="auth-header">
-            <h2>Finance Buddy</h2>
-            <p>{isSignUp ? 'Create your cloud account' : 'Sign in to sync your data'}</p>
+          <div className="auth-header" style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+            <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '0.25rem' }}>
+              <span style={{ fontSize: '2.5rem', filter: 'drop-shadow(0 0 10px rgba(79, 70, 229, 0.4))' }}>💼</span>
+            </div>
+            <h2 style={{ fontSize: '1.45rem', background: 'linear-gradient(135deg, #fff 30%, var(--text-muted) 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', fontWeight: 800 }}>
+              Finance Buddy
+            </h2>
+            <div style={{ borderBottom: '1px solid rgba(255,255,255,0.08)', paddingBottom: '0.75rem', marginBottom: '0.25rem' }}>
+              <div style={{ fontSize: '0.92rem', fontWeight: 800, color: 'var(--green)', letterSpacing: '0.3px' }}>
+                Welcome, Shailesh Kumar Nirala
+              </div>
+              <div style={{ fontSize: '0.82rem', fontWeight: 600, color: 'var(--text-muted)', marginTop: '3px' }}>
+                आपका स्वागत है, शैलेश कुमार निराला
+              </div>
+            </div>
+            <p style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>
+              {isSignUp ? 'Create your cloud account' : 'Sign in to sync your data'}
+            </p>
           </div>
           <form className="auth-form" onSubmit={handleAuth}>
             <div className="form-group full">
-              <label>Email Address</label>
+              <label style={{ fontSize: '0.72rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Email Address</label>
               <input 
                 type="email" 
                 required 
@@ -657,11 +678,11 @@ export default function App() {
                 value={authEmail} 
                 onChange={e => setAuthEmail(e.target.value)} 
                 className="cred-input"
-                style={{ background: 'rgba(255,255,255,0.05)', color: '#fff', border: '1px solid rgba(255,255,255,0.1)' }}
+                style={{ background: 'rgba(255,255,255,0.04)', color: '#fff', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', padding: '10px 14px', fontSize: '0.85rem' }}
               />
             </div>
             <div className="form-group full">
-              <label>Password</label>
+              <label style={{ fontSize: '0.72rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Password</label>
               <input 
                 type="password" 
                 required 
@@ -669,11 +690,11 @@ export default function App() {
                 value={authPassword} 
                 onChange={e => setAuthPassword(e.target.value)} 
                 className="cred-input"
-                style={{ background: 'rgba(255,255,255,0.05)', color: '#fff', border: '1px solid rgba(255,255,255,0.1)' }}
+                style={{ background: 'rgba(255,255,255,0.04)', color: '#fff', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', padding: '10px 14px', fontSize: '0.85rem' }}
               />
             </div>
-            {authError && <div style={{ color: 'var(--red)', fontSize: '0.8rem', fontWeight: 700 }}>{authError}</div>}
-            <button type="submit" className="btn btn-primary" style={{ width: '100%', height: 42, justifyContent: 'center', fontWeight: 800 }}>
+            {authError && <div style={{ color: 'var(--red)', fontSize: '0.8rem', fontWeight: 700, textAlign: 'center' }}>{authError}</div>}
+            <button type="submit" className="btn btn-primary" style={{ width: '100%', height: 42, justifyContent: 'center', fontWeight: 800, borderRadius: '8px', fontSize: '0.88rem' }}>
               {isSignUp ? 'Sign Up' : 'Sign In'}
             </button>
           </form>
@@ -690,17 +711,17 @@ export default function App() {
     <div className="app-container">
 
       {/* ═══ TOP NAVBAR ═══ */}
-      <header className="top-navbar" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+      <header className="top-navbar">
         <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
           <div className="brand">
             <span style={{ fontWeight: 900, letterSpacing: '-0.5px' }}>Finance Buddy</span>
           </div>
-          <span style={{ fontSize: '0.72rem', background: 'var(--accent-soft)', color: 'var(--accent)', padding: '4px 10px', borderRadius: '99px', fontWeight: 750 }}>
+          <span style={{ fontSize: '0.7rem', background: 'var(--accent-soft)', color: 'var(--accent)', padding: '4px 10px', borderRadius: '99px', fontWeight: 800 }}>
             ☁️ Cloud Synced
           </span>
         </div>
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: '1.25rem' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
           <nav className="nav-menu">
             {navItems.map(it => (
               <button
@@ -713,13 +734,18 @@ export default function App() {
               </button>
             ))}
           </nav>
-          <button 
-            className="btn" 
-            style={{ background: 'var(--red-bg)', color: 'var(--red)', height: '36px', padding: '0 12px', fontSize: '0.78rem', fontWeight: 800, border: '1px solid transparent', borderRadius: '6px' }}
-            onClick={() => supabase.auth.signOut()}
-          >
-            Logout
-          </button>
+
+          <div className="nav-profile">
+            <div className="profile-avatar">SK</div>
+            <span className="profile-name">Shailesh</span>
+            <button 
+              className="btn" 
+              style={{ background: 'var(--red-bg)', color: 'var(--red)', height: '28px', padding: '0 10px', fontSize: '0.72rem', fontWeight: 800, border: '1px solid transparent', borderRadius: '6px', marginLeft: '5px' }}
+              onClick={() => supabase.auth.signOut()}
+            >
+              Logout
+            </button>
+          </div>
         </div>
 
       </header>
