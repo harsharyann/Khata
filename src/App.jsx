@@ -58,6 +58,89 @@ const fmt = (n) => '₹' + Number(n).toLocaleString('en-IN');
 const fmtDate = (s) => new Date(s).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
 
 // ─────────────────────────────────────────────
+//   SAMITI CALENDAR COMPONENT
+// ─────────────────────────────────────────────
+const SamitiCalendar = ({ samiti, payments, togglePayment }) => {
+  const [currentMonth, setCurrentMonth] = useState(new Date());
+
+  const year = currentMonth.getFullYear();
+  const month = currentMonth.getMonth();
+
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+  const firstDayIndex = new Date(year, month, 1).getDay(); // 0 is Sunday, 1 is Monday
+
+  // Adjust so Monday is 0
+  const startDay = firstDayIndex === 0 ? 6 : firstDayIndex - 1;
+
+  const monthNames = ["January", "February", "March", "April", "May", "June",
+                      "July", "August", "September", "October", "November", "December"];
+
+  const prevMonth = () => setCurrentMonth(new Date(year, month - 1, 1));
+  const nextMonth = () => setCurrentMonth(new Date(year, month + 1, 1));
+
+  const sDate = new Date(samiti.start_date);
+  const mDate = new Date(sDate);
+  mDate.setMonth(mDate.getMonth() + samiti.tenure_months);
+  
+  sDate.setHours(0,0,0,0);
+  mDate.setHours(0,0,0,0);
+
+  return (
+    <div style={{ background: 'var(--bg-hover)', padding: '12px', borderRadius: 'var(--r-md)', border: '1px solid var(--border)' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+        <button onClick={prevMonth} className="btn-icon" style={{ height: 28, width: 28 }}><ChevronLeft size={16}/></button>
+        <span style={{ fontSize: '0.85rem', fontWeight: 800, color: 'var(--text-primary)' }}>{monthNames[month]} {year}</span>
+        <button onClick={nextMonth} className="btn-icon" style={{ height: 28, width: 28 }}><ChevronRight size={16}/></button>
+      </div>
+
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: '4px', textAlign: 'center' }}>
+        {['M', 'T', 'W', 'T', 'F', 'S', 'S'].map((d, i) => (
+          <div key={i} style={{ fontSize: '0.65rem', fontWeight: 800, color: 'var(--text-muted)' }}>{d}</div>
+        ))}
+        
+        {Array.from({ length: startDay }).map((_, i) => <div key={`empty-${i}`} />)}
+
+        {Array.from({ length: daysInMonth }).map((_, i) => {
+          const day = i + 1;
+          const dateObj = new Date(year, month, day);
+          
+          const tzOffset = dateObj.getTimezoneOffset() * 60000;
+          const localISOTime = (new Date(dateObj - tzOffset)).toISOString().slice(0, -1);
+          const dateStr = localISOTime.split('T')[0];
+          
+          const isPaid = payments.some(p => p.payment_date === dateStr);
+          
+          const isBeforeStart = dateObj < sDate;
+          const isAfterMaturity = dateObj > mDate;
+          const isDisabled = isBeforeStart || isAfterMaturity;
+
+          return (
+            <button 
+              key={day}
+              disabled={isDisabled}
+              onClick={() => togglePayment(samiti.id, dateStr, isPaid)}
+              style={{
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                aspectRatio: '1', borderRadius: '6px',
+                background: isPaid ? 'var(--green)' : (isDisabled ? 'transparent' : 'var(--bg-card)'),
+                color: isPaid ? 'white' : (isDisabled ? 'var(--text-muted)' : 'var(--text-secondary)'),
+                border: isPaid ? 'none' : (isDisabled ? '1px dashed var(--border)' : '1px solid var(--border-strong)'),
+                cursor: isDisabled ? 'not-allowed' : 'pointer',
+                opacity: isDisabled ? 0.3 : 1,
+                transition: 'all 0.15s', padding: 0, fontSize: '0.75rem', fontWeight: 700
+              }}
+              title={dateStr}
+            >
+              {day}
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+};
+
+// ─────────────────────────────────────────────
 //   APP
 // ─────────────────────────────────────────────
 export default function App() {
@@ -1638,6 +1721,14 @@ export default function App() {
                   </button>
                 </div>
               </div>
+              <div className="stat-grid" style={{ marginBottom: '1.75rem' }}>
+                <StatCard icon={<Target size={18}/>}   color="purple"  label="Active Samitis"   value={samitis.length} />
+                <StatCard icon={<CheckCircle size={18}/>} color="green" label="Total Paid Amount" value={fmt(samitiPayments.reduce((sum, p) => {
+                  const s = samitis.find(x => x.id === p.samiti_id);
+                  return sum + (s ? Number(s.daily_amount) : 0);
+                }, 0))} valueColor="green"/>
+                <StatCard icon={<TrendingUp size={18}/>} color="blue" label="Expected Returns" value={fmt(samitis.reduce((s, x) => s + Number(x.maturity_amount), 0))} />
+              </div>
 
               <div className="item-grid" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(340px, 1fr))' }}>
                 {samitis.map(samiti => {
@@ -1693,36 +1784,7 @@ export default function App() {
                         </div>
                       </div>
 
-                      <div style={{ background: 'var(--bg-hover)', padding: '12px', borderRadius: 'var(--r-md)', border: '1px solid var(--border)' }}>
-                        <div style={{ fontSize: '0.75rem', fontWeight: 800, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 8, display: 'flex', justifyContent: 'space-between' }}>
-                          <span>Daily Markup (Last 7 Days)</span>
-                        </div>
-                        <div style={{ display: 'flex', gap: '6px', justifyContent: 'space-between' }}>
-                          {last7Days.map(dateStr => {
-                            const isPaid = sPayments.some(p => p.payment_date === dateStr);
-                            const dayName = new Date(dateStr).toLocaleDateString('en-US', { weekday: 'short' }).charAt(0);
-                            const dayNum = dateStr.split('-')[2];
-                            return (
-                              <button 
-                                key={dateStr}
-                                onClick={() => toggleSamitiPayment(samiti.id, dateStr, isPaid)}
-                                style={{
-                                  display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-                                  width: '36px', height: '46px', borderRadius: '8px',
-                                  background: isPaid ? 'var(--green)' : 'var(--bg-card)',
-                                  color: isPaid ? 'white' : 'var(--text-secondary)',
-                                  border: isPaid ? 'none' : '1px solid var(--border-strong)',
-                                  cursor: 'pointer', transition: 'all 0.2s', padding: 0
-                                }}
-                                title={dateStr}
-                              >
-                                <span style={{ fontSize: '0.65rem', fontWeight: 800, opacity: 0.9 }}>{dayName}</span>
-                                <span style={{ fontSize: '0.85rem', fontWeight: 800 }}>{dayNum}</span>
-                              </button>
-                            );
-                          })}
-                        </div>
-                      </div>
+                      <SamitiCalendar samiti={samiti} payments={sPayments} togglePayment={toggleSamitiPayment} />
                     </div>
                   );
                 })}
