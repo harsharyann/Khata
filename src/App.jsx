@@ -647,7 +647,7 @@ export default function App() {
                             <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)', fontWeight: 700, textTransform: 'uppercase' }}>{acc.type} Account</span>
                           </div>
                           <span style={{ fontSize: '0.72rem', color: 'var(--text-secondary)', background: 'var(--border)', padding: '3px 8px', borderRadius: '4px', fontWeight: 750, fontFamily: 'monospace' }}>
-                            ****{acc.accountNumber.slice(-4)}
+                            {acc.accountNumber.slice(-4)}
                           </span>
                         </div>
                       </div>
@@ -744,7 +744,7 @@ export default function App() {
                           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                             <div>
                               <h3 style={{ fontSize: '1.15rem', fontWeight: 800, color: 'var(--text-primary)', margin: 0 }}>{card.bankName}</h3>
-                              <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', fontWeight: 600 }}>{card.cardName} (****{card.cardNumber.slice(-4)})</span>
+                              <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', fontWeight: 600 }}>{card.cardName} ({card.cardNumber.slice(-4)})</span>
                             </div>
                             <span style={{ fontSize: '0.65rem', fontWeight: 800, color: healthColor, background: healthBg, padding: '3px 8px', borderRadius: '99px', textTransform: 'uppercase' }}>
                               {util}% Utilized
