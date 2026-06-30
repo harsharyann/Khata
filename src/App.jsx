@@ -716,9 +716,6 @@ export default function App() {
           <div className="brand">
             <span style={{ fontWeight: 900, letterSpacing: '-0.5px' }}>Finance Buddy</span>
           </div>
-          <span style={{ fontSize: '0.7rem', background: 'var(--accent-soft)', color: 'var(--accent)', padding: '4px 10px', borderRadius: '99px', fontWeight: 800 }}>
-            ☁️ Cloud Synced
-          </span>
         </div>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
