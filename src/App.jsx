@@ -815,72 +815,116 @@ export default function App() {
                   const statementOrdinal = card.statementDate ? getOrdinal(parseInt(card.statementDate)) : "N/A";
 
                   return (
-                    <div key={card.id} className="cred-card" style={{ position: 'relative', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', background: 'var(--bg-card)', border: '1px solid var(--border)', boxShadow: 'var(--shadow-md)', borderRadius: 'var(--r-lg)', padding: '1.5rem', overflow: 'hidden' }}>
-                      <div style={{ position: 'absolute', top: 16, right: 16, zIndex: 10, display: 'flex', gap: 6 }}>
-                        <button className="btn-icon" style={{ background: 'var(--bg-hover)' }} onClick={() => openModal('Edit Credit Card', 'card', card)}>
-                          <Edit3 size={13} color="var(--text-primary)"/>
+                    <div key={card.id} className="cred-card" style={{ position: 'relative', display: 'flex', flexDirection: 'column', background: 'var(--bg-card)', border: '1px solid var(--border)', boxShadow: 'var(--shadow-md)', borderRadius: 'var(--r-lg)', padding: '1.25rem', overflow: 'hidden', gap: '1rem' }}>
+                      
+                      {/* Floating Action Buttons */}
+                      <div style={{ position: 'absolute', top: 28, right: 28, zIndex: 10, display: 'flex', gap: 6 }}>
+                        <button className="btn-icon" style={{ background: 'rgba(255,255,255,0.25)', backdropFilter: 'blur(4px)', border: '1px solid rgba(255,255,255,0.2)' }} onClick={() => openModal('Edit Credit Card', 'card', card)}>
+                          <Edit3 size={13} color="white"/>
                         </button>
-                        <button className="btn-icon danger" onClick={() => { if (confirm(`Remove ${card.bankName} - ${card.cardName}?`)) setCreditCards(p => p.filter(c => c.id !== card.id)); }}>
-                          <Trash2 size={13}/>
+                        <button className="btn-icon danger" style={{ background: 'rgba(239,68,68,0.25)', backdropFilter: 'blur(4px)', border: '1px solid rgba(239,68,68,0.2)' }} onClick={() => { if (confirm(`Remove ${card.bankName} - ${card.cardName}?`)) setCreditCards(p => p.filter(c => c.id !== card.id)); }}>
+                          <Trash2 size={13} color="white"/>
                         </button>
                       </div>
 
-                      <div>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>
-                          <div style={{ background: 'var(--accent-soft)', padding: 10, borderRadius: 10 }}><CreditCard size={20} color="var(--accent)"/></div>
-                          <div>
-                            <div style={{ fontWeight: 800, fontSize: '1.15rem', color: 'var(--text-primary)' }}>{card.bankName}</div>
-                            <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>{card.cardName}</div>
+                      {/* Realistic Credit Card Graphic */}
+                      <div style={{
+                        background: idx % 3 === 0 
+                          ? 'linear-gradient(135deg, #1e1b4b 0%, #312e81 60%, #4f46e5 100%)' 
+                          : idx % 3 === 1 
+                            ? 'linear-gradient(135deg, #0f172a 0%, #1e293b 60%, #334155 100%)' 
+                            : 'linear-gradient(135deg, #3b0764 0%, #1e1b4b 60%, #6366f1 100%)',
+                        borderRadius: '16px',
+                        padding: '1.25rem',
+                        color: 'white',
+                        position: 'relative',
+                        boxShadow: '0 8px 24px rgba(0,0,0,0.12)',
+                        height: '165px',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        justifyContent: 'space-between',
+                        border: '1px solid rgba(255,255,255,0.08)'
+                      }}>
+                        {/* Card Gloss Layer */}
+                        <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, background: 'linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 50%)', borderRadius: '16px', pointerEvents: 'none' }}/>
+
+                        {/* Top Bank Details */}
+                        <div style={{ zIndex: 1 }}>
+                          <div style={{ fontWeight: 900, fontSize: '1.2rem', letterSpacing: '-0.3px', textTransform: 'uppercase', textShadow: '0 2px 4px rgba(0,0,0,0.2)' }}>{card.bankName}</div>
+                          <div style={{ fontSize: '0.75rem', opacity: 0.8, fontWeight: 500, letterSpacing: '0.5px' }}>{card.cardName}</div>
+                        </div>
+
+                        {/* EMV Chip & Contactless */}
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', zIndex: 1 }}>
+                          <div style={{ width: 36, height: 26, background: 'linear-gradient(135deg, #f59e0b 0%, #fbbf24 100%)', borderRadius: '6px', boxShadow: 'inset 0 1px 3px rgba(0,0,0,0.2)', position: 'relative' }}>
+                            <div style={{ position: 'absolute', top: 4, bottom: 4, left: 10, right: 10, borderLeft: '1px solid rgba(0,0,0,0.15)', borderRight: '1px solid rgba(0,0,0,0.15)' }}/>
+                            <div style={{ position: 'absolute', left: 4, right: 4, top: 8, bottom: 8, borderTop: '1px solid rgba(0,0,0,0.15)', borderBottom: '1px solid rgba(0,0,0,0.15)' }}/>
+                          </div>
+                          <div style={{ opacity: 0.6 }}>
+                            <ArrowRightLeft size={16} style={{ transform: 'rotate(-45deg)' }}/>
                           </div>
                         </div>
 
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-                          <div style={{ fontSize: '1.05rem', letterSpacing: '2px', color: 'var(--text-muted)', fontFamily: 'monospace' }}>**** **** **** {card.cardNumber}</div>
-                          <span style={{ fontSize: '0.7rem', fontWeight: 700, color: healthColor, background: healthBg, padding: '4px 10px', borderRadius: 99, textTransform: 'uppercase', letterSpacing: 0.5 }}>
+                        {/* Card Number */}
+                        <div style={{ fontSize: '1.15rem', letterSpacing: '3px', fontFamily: 'monospace', textShadow: '0 2px 4px rgba(0,0,0,0.4)', fontWeight: 600, zIndex: 1 }}>
+                          ••••  ••••  ••••  {card.cardNumber}
+                        </div>
+                      </div>
+
+                      {/* Card Info Details */}
+                      <div>
+                        {/* Health Badge & Util Header */}
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem' }}>
+                          <span style={{ fontSize: '0.72rem', fontWeight: 800, color: 'var(--text-secondary)' }}>CARD HEALTH</span>
+                          <span style={{ fontSize: '0.7rem', fontWeight: 800, color: healthColor, background: healthBg, padding: '4px 10px', borderRadius: 99, textTransform: 'uppercase', letterSpacing: 0.5 }}>
                             {healthLabel}
                           </span>
                         </div>
-                      </div>
 
-                      <div style={{ background: 'var(--bg-hover)', borderRadius: 'var(--r-md)', padding: '12px 16px', border: '1px solid var(--border)', marginBottom: 14 }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.72rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 6 }}>
-                          <span style={{ color: 'var(--text-secondary)' }}>Utilized: {util}%</span>
-                          <span style={{ color: 'var(--text-primary)' }}>Available: {fmt(card.limit - card.outstanding)}</span>
+                        {/* Utilization Bar */}
+                        <div style={{ background: 'var(--bg-hover)', borderRadius: 'var(--r-md)', padding: '12px', border: '1px solid var(--border)', marginBottom: 12 }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.72rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 6 }}>
+                            <span style={{ color: 'var(--text-secondary)' }}>Utilized: {util}%</span>
+                            <span style={{ color: 'var(--text-primary)' }}>Available: {fmt(card.limit - card.outstanding)}</span>
+                          </div>
+                          <div className="progress-bar-wrap" style={{ height: 6, background: 'rgba(0,0,0,0.06)', borderRadius: 99, marginBottom: 10, overflow: 'hidden' }}>
+                            <div style={{ height: '100%', background: healthColor, width: `${Math.min(util, 100)}%` }}/>
+                          </div>
+                          
+                          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem' }}>
+                            <div>
+                              <div style={{ color: 'var(--text-muted)', fontSize: '0.6rem', fontWeight: 700, letterSpacing: 0.5 }}>LIMIT</div>
+                              <div style={{ color: 'var(--text-primary)', fontWeight: 800 }}>{fmt(card.limit)}</div>
+                            </div>
+                            <div style={{ textAlign: 'right' }}>
+                              <div style={{ color: 'var(--text-muted)', fontSize: '0.6rem', fontWeight: 700, letterSpacing: 0.5 }}>OUTSTANDING</div>
+                              <div style={{ color: healthColor, fontWeight: 900 }}>{fmt(card.outstanding)}</div>
+                            </div>
+                          </div>
                         </div>
-                        <div className="progress-bar-wrap" style={{ height: 6, background: 'rgba(0,0,0,0.06)', borderRadius: 99, marginBottom: 12, overflow: 'hidden' }}>
-                          <div style={{ height: '100%', background: healthColor, width: `${Math.min(util, 100)}%` }}/>
-                        </div>
-                        
-                        <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+
+                        {/* Statement / Due Dates */}
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, borderTop: '1px dashed var(--border)', paddingTop: 12, marginBottom: 12 }}>
                           <div>
-                            <div style={{ color: 'var(--text-muted)', fontSize: '0.6rem', fontWeight: 700, letterSpacing: 0.5 }}>LIMIT</div>
-                            <div style={{ color: 'var(--text-primary)', fontWeight: 800, fontSize: '0.95rem' }}>{fmt(card.limit)}</div>
+                            <div style={{ color: 'var(--text-muted)', fontSize: '0.65rem', fontWeight: 700 }}>STATEMENT DATE</div>
+                            <div style={{ color: 'var(--text-primary)', fontSize: '0.85rem', fontWeight: 700 }}>{statementOrdinal} of month</div>
                           </div>
                           <div style={{ textAlign: 'right' }}>
-                            <div style={{ color: 'var(--text-muted)', fontSize: '0.6rem', fontWeight: 700, letterSpacing: 0.5 }}>OUTSTANDING</div>
-                            <div style={{ color: healthColor, fontWeight: 900, fontSize: '0.95rem' }}>{fmt(card.outstanding)}</div>
+                            <div style={{ color: 'var(--text-muted)', fontSize: '0.65rem', fontWeight: 700 }}>DUE DATE</div>
+                            <div style={{ color: 'var(--red)', fontSize: '0.85rem', fontWeight: 800 }}>{dueOrdinal} of month</div>
                           </div>
                         </div>
+
+                        {/* Pay Warning Banner */}
+                        {card.dueDate && (
+                          <div style={{ background: 'var(--red-bg)', border: '1px solid rgba(244, 63, 94, 0.15)', borderRadius: 'var(--r-sm)', padding: '8px 10px', display: 'flex', alignItems: 'center', gap: 6, justifyContent: 'center' }}>
+                            <span style={{ fontSize: '0.68rem', fontWeight: 900, color: 'var(--red)', letterSpacing: 0.2, textAlign: 'center', textTransform: 'uppercase' }}>
+                              ⚠️ MUST PAY BY {dueOrdinal} AT ALL COSTS!
+                            </span>
+                          </div>
+                        )}
                       </div>
 
-                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, borderTop: '1px dashed var(--border)', paddingTop: 12 }}>
-                        <div>
-                          <div style={{ color: 'var(--text-muted)', fontSize: '0.65rem', fontWeight: 700 }}>STATEMENT DATE</div>
-                          <div style={{ color: 'var(--text-primary)', fontSize: '0.85rem', fontWeight: 700 }}>{statementOrdinal} of month</div>
-                        </div>
-                        <div style={{ textAlign: 'right' }}>
-                          <div style={{ color: 'var(--text-muted)', fontSize: '0.65rem', fontWeight: 700 }}>DUE DATE</div>
-                          <div style={{ color: 'var(--red)', fontSize: '0.85rem', fontWeight: 800 }}>{dueOrdinal} of month</div>
-                        </div>
-                      </div>
-
-                      {card.dueDate && (
-                        <div style={{ marginTop: 14, background: 'var(--red-bg)', border: '1px solid rgba(244, 63, 94, 0.15)', borderRadius: 'var(--r-sm)', padding: '8px 10px', display: 'flex', alignItems: 'center', gap: 6, justifyContent: 'center' }}>
-                          <span style={{ fontSize: '0.68rem', fontWeight: 900, color: 'var(--red)', letterSpacing: 0.2, textAlign: 'center', textTransform: 'uppercase' }}>
-                            ⚠️ MUST PAY BY {dueOrdinal} AT ALL COSTS!
-                          </span>
-                        </div>
-                      )}
                     </div>
                   );
                 })}
