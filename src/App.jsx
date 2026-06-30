@@ -2009,22 +2009,48 @@ export default function App() {
                     <label>Daily Amount (₹)</label>
                     <input name="daily_amount" type="number" required placeholder="0" min="1" defaultValue={modal.item?.daily_amount || ''} onChange={e => {
                       const form = e.target.form;
-                      const d = parseFloat(e.target.value) || 0;
+                      const d = parseFloat(form.daily_amount.value) || 0;
                       const t = parseInt(form.tenure_months.value) || 0;
-                      if (d && t) form.maturity_amount.value = d * 30 * t;
+                      const s = form.start_date.value;
+                      if (d && t && s) {
+                        const sDate = new Date(s);
+                        const mDate = new Date(s);
+                        mDate.setMonth(mDate.getMonth() + t);
+                        const diffDays = Math.round(Math.abs(mDate - sDate) / (1000 * 60 * 60 * 24));
+                        form.maturity_amount.value = d * diffDays;
+                      }
                     }}/>
                   </div>
                   <div className="form-group">
                     <label>Start Date</label>
-                    <input name="start_date" type="date" required defaultValue={modal.item?.start_date || new Date().toISOString().split('T')[0]}/>
+                    <input name="start_date" type="date" required defaultValue={modal.item?.start_date || new Date().toISOString().split('T')[0]} onChange={e => {
+                      const form = e.target.form;
+                      const d = parseFloat(form.daily_amount.value) || 0;
+                      const t = parseInt(form.tenure_months.value) || 0;
+                      const s = form.start_date.value;
+                      if (d && t && s) {
+                        const sDate = new Date(s);
+                        const mDate = new Date(s);
+                        mDate.setMonth(mDate.getMonth() + t);
+                        const diffDays = Math.round(Math.abs(mDate - sDate) / (1000 * 60 * 60 * 24));
+                        form.maturity_amount.value = d * diffDays;
+                      }
+                    }}/>
                   </div>
                   <div className="form-group">
                     <label>Tenure (Months)</label>
                     <input name="tenure_months" type="number" required placeholder="12" min="1" defaultValue={modal.item?.tenure_months || ''} onChange={e => {
                       const form = e.target.form;
                       const d = parseFloat(form.daily_amount.value) || 0;
-                      const t = parseInt(e.target.value) || 0;
-                      if (d && t) form.maturity_amount.value = d * 30 * t;
+                      const t = parseInt(form.tenure_months.value) || 0;
+                      const s = form.start_date.value;
+                      if (d && t && s) {
+                        const sDate = new Date(s);
+                        const mDate = new Date(s);
+                        mDate.setMonth(mDate.getMonth() + t);
+                        const diffDays = Math.round(Math.abs(mDate - sDate) / (1000 * 60 * 60 * 24));
+                        form.maturity_amount.value = d * diffDays;
+                      }
                     }}/>
                   </div>
                   <div className="form-group">
