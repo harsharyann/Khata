@@ -420,13 +420,139 @@ export default function App() {
 
           {/* ══ DASHBOARD ══ */}
           {view === 'dashboard' && (
-            <div className="fade-in-view" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '60vh', textAlign: 'center', gap: '1.5rem' }}>
-              <div style={{ fontSize: '4rem' }}>🚧</div>
-              <div>
-                <h1 style={{ fontSize: '2rem', fontWeight: 900, color: 'var(--text-primary)', letterSpacing: '-0.5px' }}>Coming Soon</h1>
-                <p style={{ fontSize: '1rem', color: 'var(--text-muted)', marginTop: '0.5rem', fontWeight: 500 }}>Dashboard is being rebuilt from scratch.</p>
+            <div className="fade-in-view">
+              <div className="page-header" style={{ marginBottom: '2rem' }}>
+                <div className="page-header-left">
+                  <span className="eyebrow">Overview</span>
+                  <h1>Dashboard</h1>
+                </div>
+                <div className="page-header-right">
+                  <MonthSel />
+                </div>
               </div>
-              <span style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-secondary)', background: 'var(--bg-hover)', padding: '6px 16px', borderRadius: 99, border: '1px solid var(--border)' }}>Work in progress</span>
+
+              {/* Main 2-Column Dashboard Grid */}
+              <div style={{ display: 'grid', gridTemplateColumns: '2fr 1.1fr', gap: '1.75rem', alignItems: 'start' }} className="dashboard-grid">
+                
+                {/* Left Column: Metrics & Charts */}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '1.75rem' }}>
+                  
+                  {/* Hero Metric: Net Wealth */}
+                  <div className="panel" style={{ padding: '2rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'linear-gradient(135deg, var(--bg-card) 0%, var(--bg-hover) 100%)', borderLeft: '6px solid var(--accent)' }}>
+                    <div>
+                      <span style={{ color: 'var(--text-secondary)', fontSize: '0.8rem', fontWeight: 800, letterSpacing: 1, textTransform: 'uppercase', display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8 }}>
+                        💎 Total Net Worth (Cash + Bank)
+                      </span>
+                      <span style={{ fontSize: '3rem', fontWeight: 900, color: 'var(--text-primary)', letterSpacing: '-1.5px', lineHeight: 1.1 }}>{fmt(totalWealth)}</span>
+                      <p style={{ fontSize: '0.82rem', color: 'var(--text-muted)', marginTop: 8, fontWeight: 500 }}>Your total physical cash and bank balances combined.</p>
+                    </div>
+                    <div style={{ background: 'var(--accent-mid)', padding: '20px', borderRadius: '50%', color: 'var(--accent)' }}>
+                      <Wallet size={40} />
+                    </div>
+                  </div>
+
+                  {/* Monthly Stats Row */}
+                  <div className="stat-grid" style={{ gridTemplateColumns: 'repeat(3, 1fr)', gap: '1.25rem' }}>
+                    <StatCard icon={<TrendingUp size={18}/>} color="green" label="Monthly Income" value={fmt(totInc)} valueColor="green" sub="This Month" />
+                    <StatCard icon={<TrendingDown size={18}/>} color="red" label="Monthly Expenses" value={fmt(totExp)} valueColor="red" sub="This Month" />
+                    <StatCard icon={<IndianRupee size={18}/>} color="blue" label="Net Savings" value={fmt(net)} valueColor={net >= 0 ? "green" : "red"} sub="Income - Expenses" />
+                  </div>
+
+                  {/* 15-Day Cashflow Chart */}
+                  <div className="panel" style={{ padding: '1.5rem' }}>
+                    <div className="panel-header" style={{ background: 'transparent', borderBottom: '1px solid rgba(0,0,0,0.05)', padding: '0 0 1rem 0', marginBottom: '1.5rem' }}>
+                      <TrendingUp size={18} style={{ color: 'var(--accent)' }}/>
+                      <h3 style={{ fontSize: '1.1rem', fontWeight: 800 }}>Cashflow Trend (Last 15 Days)</h3>
+                    </div>
+                    <div style={{ height: '260px', position: 'relative' }}>
+                      <Line data={lineData} options={chartOpts} />
+                    </div>
+                  </div>
+
+                </div>
+
+                {/* Right Column: Summaries & Alerts */}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '1.75rem' }}>
+
+                  {/* Bank Accounts Quick List */}
+                  <div className="panel" style={{ padding: '1.5rem' }}>
+                    <div className="panel-header" style={{ background: 'transparent', borderBottom: '1px solid rgba(0,0,0,0.05)', padding: '0 0 1rem 0', marginBottom: '1rem' }}>
+                      <Building size={16} style={{ color: 'var(--blue)' }}/>
+                      <h3 style={{ fontSize: '0.95rem', fontWeight: 800 }}>Bank Accounts & Cash</h3>
+                    </div>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 12px', background: 'var(--bg-hover)', borderRadius: '8px' }}>
+                        <span style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--text-secondary)' }}>Cash on Hand</span>
+                        <span style={{ fontSize: '0.88rem', fontWeight: 800, color: 'var(--green)' }}>{fmt(cash)}</span>
+                      </div>
+                      {banks.map(b => (
+                        <div key={b.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 12px', background: 'var(--bg-hover)', borderRadius: '8px' }}>
+                          <div>
+                            <span style={{ fontSize: '0.85rem', fontWeight: 800, color: 'var(--text-primary)', display: 'block' }}>{b.bankName}</span>
+                            <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)', fontWeight: 600 }}>•••• {b.accountNumber.slice(-4)}</span>
+                          </div>
+                          <span style={{ fontSize: '0.88rem', fontWeight: 800, color: 'var(--blue)' }}>{fmt(b.balance)}</span>
+                        </div>
+                      ))}
+                      {banks.length === 0 && <div className="empty-state" style={{ padding: '10px 0' }}>No bank accounts.</div>}
+                    </div>
+                  </div>
+
+                  {/* Credit Card Dues Alert */}
+                  {creditCards.length > 0 && (
+                    <div className="panel" style={{ padding: '1.5rem' }}>
+                      <div className="panel-header" style={{ background: 'transparent', borderBottom: '1px solid rgba(0,0,0,0.05)', padding: '0 0 1rem 0', marginBottom: '1rem' }}>
+                        <CreditCard size={16} style={{ color: 'var(--purple)' }}/>
+                        <h3 style={{ fontSize: '0.95rem', fontWeight: 800 }}>Outstanding Cards</h3>
+                      </div>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                        {creditCards.map(c => {
+                          if (parseFloat(c.outstanding) === 0) return null;
+                          return (
+                            <div key={c.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 12px', background: 'rgba(244, 63, 94, 0.04)', border: '1px solid rgba(244, 63, 94, 0.1)', borderRadius: '8px' }}>
+                              <div>
+                                <span style={{ fontSize: '0.85rem', fontWeight: 800, color: 'var(--text-primary)', display: 'block' }}>{c.bankName} CC</span>
+                                <span style={{ fontSize: '0.7rem', color: 'var(--red)', fontWeight: 700 }}>Due: {c.dueDate || 'N/A'}{c.dueDate ? 'th' : ''}</span>
+                              </div>
+                              <span style={{ fontSize: '0.88rem', fontWeight: 800, color: 'var(--red)' }}>{fmt(c.outstanding)}</span>
+                            </div>
+                          );
+                        })}
+                        {creditCards.every(c => parseFloat(c.outstanding) === 0) && (
+                          <div className="empty-state" style={{ padding: '10px 0', color: 'var(--green)' }}>✓ All credit card bills paid!</div>
+                        )}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Borrower Alerts */}
+                  {borrowers.length > 0 && borrowers.some(b => b.principal - b.repaid > 0) && (
+                    <div className="panel" style={{ padding: '1.5rem' }}>
+                      <div className="panel-header" style={{ background: 'transparent', borderBottom: '1px solid rgba(0,0,0,0.05)', padding: '0 0 1rem 0', marginBottom: '1rem' }}>
+                        <Users size={16} style={{ color: 'var(--amber)' }}/>
+                        <h3 style={{ fontSize: '0.95rem', fontWeight: 800 }}>Pending Borrowers (Khata)</h3>
+                      </div>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                        {borrowers.map(b => {
+                          const rem = b.principal - b.repaid;
+                          if (rem <= 0) return null;
+                          return (
+                            <div key={b.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 12px', background: 'rgba(245, 158, 11, 0.04)', border: '1px solid rgba(245, 158, 11, 0.1)', borderRadius: '8px' }}>
+                              <div>
+                                <span style={{ fontSize: '0.85rem', fontWeight: 800, color: 'var(--text-primary)', display: 'block' }}>{b.name}</span>
+                                <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)', fontWeight: 600 }}>Given: {fmtDate(b.date)}</span>
+                              </div>
+                              <span style={{ fontSize: '0.88rem', fontWeight: 800, color: 'var(--amber)' }}>{fmt(rem)}</span>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
+
+                </div>
+
+              </div>
             </div>
           )}
 
