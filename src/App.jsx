@@ -343,11 +343,9 @@ export default function App() {
                   
                   if (inc > 0) {
                     setIncomes(p => [{ id: Date.now(), date, amount: inc, category: 'Others' }, ...p]);
-                    setCash(c => c + inc);
                   }
                   if (exp > 0) {
                     setExpenses(p => [{ id: Date.now() + 1, date, amount: exp, category: 'Others' }, ...p]);
-                    setCash(c => c - exp);
                   }
                   f.reset();
                   f.date.value = new Date().toISOString().split('T')[0];
@@ -635,7 +633,6 @@ export default function App() {
                               <button className="btn-icon danger" title="Delete" onClick={() => {
                                 if(!window.confirm('Delete this income?')) return;
                                 setIncomes(p => p.filter(x => x.id !== item.id));
-                                setCash(c => c - item.amount);
                               }}>
                                 <Trash2 size={13}/>
                               </button>
@@ -676,7 +673,6 @@ export default function App() {
                               <button className="btn-icon danger" title="Delete" onClick={() => {
                                 if(!window.confirm('Delete this expense?')) return;
                                 setExpenses(p => p.filter(x => x.id !== item.id));
-                                setCash(c => c + item.amount);
                               }}>
                                 <Trash2 size={13}/>
                               </button>
@@ -1110,10 +1106,8 @@ export default function App() {
                   if (!date || amount <= 0) { alert('Enter a date and amount.'); return; }
                   if (type === 'income') {
                     setIncomes(p => [...p, { id: Date.now(), date, amount, category }]);
-                    setCash(c => c + amount);
                   } else {
                     setExpenses(p => [...p, { id: Date.now(), date, amount, category }]);
-                    setCash(c => c - amount);
                   }
                   closeModal();
                 }}>
