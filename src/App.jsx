@@ -605,109 +605,88 @@ export default function App() {
                 <StatCard icon={<TrendingUp size={18}/>} color="blue" label="Net Cashflow" value={fmt(totInc - totExp)} valueColor={totInc - totExp >= 0 ? "blue" : "red"} />
               </div>
 
-              <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '1.25rem' }} className="cashflow-grid">
-                {/* LEFT COLUMN: TABLES */}
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-                  
-                  {/* INCOMES TABLE */}
-                  <div className="data-table-wrap" style={{ marginTop: 0 }}>
-                    <div className="panel-header" style={{ background: 'transparent', borderBottom: '1px solid rgba(0,0,0,0.05)', padding: '1rem 1.25rem' }}>
-                      <h3 style={{ color: 'var(--green)' }}>Recent Income</h3>
-                    </div>
-                    <table className="data-table">
-                      <thead>
-                        <tr>
-                          <th>Date</th>
-                          <th>Category</th>
-                          <th>Amount (₹)</th>
-                          <th style={{ textAlign: 'right' }}>Actions</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {curInc.sort((a,b) => new Date(b.date) - new Date(a.date)).map(item => (
-                          <tr key={item.id}>
-                            <td style={{ color: 'var(--text-secondary)', fontWeight: 500 }}>{fmtDate(item.date)}</td>
-                            <td><span className="badge" style={{ background: 'var(--green-bg)', color: 'var(--green)', padding: '2px 8px', borderRadius: 4, fontSize: '0.75rem', fontWeight: 600 }}>{item.category || 'Others'}</span></td>
-                            <td style={{ fontWeight: 700, color: 'var(--green)' }}>+{fmt(item.amount)}</td>
-                            <td style={{ textAlign: 'right' }}>
-                              <div className="action-btns" style={{ justifyContent: 'flex-end' }}>
-                                <button className="btn-icon" title="Edit" onClick={() => openModal('Edit Income', 'income', item)}>
-                                  <Edit3 size={13}/>
-                                </button>
-                                <button className="btn-icon danger" title="Delete" onClick={() => {
-                                  if(!window.confirm('Delete this income?')) return;
-                                  setIncomes(p => p.filter(x => x.id !== item.id));
-                                  setCash(c => c - item.amount);
-                                }}>
-                                  <Trash2 size={13}/>
-                                </button>
-                              </div>
-                            </td>
-                          </tr>
-                        ))}
-                        {curInc.length === 0 && <tr><td colSpan="4" className="empty-state">No income this month</td></tr>}
-                      </tbody>
-                    </table>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.25rem' }}>
+                {/* INCOMES TABLE */}
+                <div className="data-table-wrap" style={{ marginTop: 0 }}>
+                  <div className="panel-header" style={{ background: 'transparent', borderBottom: '1px solid rgba(0,0,0,0.05)', padding: '1rem 1.25rem' }}>
+                    <h3 style={{ color: 'var(--green)' }}>Recent Income</h3>
                   </div>
-
-                  {/* EXPENSES TABLE */}
-                  <div className="data-table-wrap" style={{ marginTop: 0 }}>
-                    <div className="panel-header" style={{ background: 'transparent', borderBottom: '1px solid rgba(0,0,0,0.05)', padding: '1rem 1.25rem' }}>
-                      <h3 style={{ color: 'var(--red)' }}>Recent Expenses</h3>
-                    </div>
-                    <table className="data-table">
-                      <thead>
-                        <tr>
-                          <th>Date</th>
-                          <th>Category</th>
-                          <th>Amount (₹)</th>
-                          <th style={{ textAlign: 'right' }}>Actions</th>
+                  <table className="data-table">
+                    <thead>
+                      <tr>
+                        <th>Date</th>
+                        <th>Category</th>
+                        <th>Amount (₹)</th>
+                        <th style={{ textAlign: 'right' }}>Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {curInc.sort((a,b) => new Date(b.date) - new Date(a.date)).map(item => (
+                        <tr key={item.id}>
+                          <td style={{ color: 'var(--text-secondary)', fontWeight: 500 }}>{fmtDate(item.date)}</td>
+                          <td><span className="badge" style={{ background: 'var(--green-bg)', color: 'var(--green)', padding: '2px 8px', borderRadius: 4, fontSize: '0.75rem', fontWeight: 600 }}>{item.category || 'Others'}</span></td>
+                          <td style={{ fontWeight: 700, color: 'var(--green)' }}>+{fmt(item.amount)}</td>
+                          <td style={{ textAlign: 'right' }}>
+                            <div className="action-btns" style={{ justifyContent: 'flex-end' }}>
+                              <button className="btn-icon" title="Edit" onClick={() => openModal('Edit Income', 'income', item)}>
+                                <Edit3 size={13}/>
+                              </button>
+                              <button className="btn-icon danger" title="Delete" onClick={() => {
+                                if(!window.confirm('Delete this income?')) return;
+                                setIncomes(p => p.filter(x => x.id !== item.id));
+                                setCash(c => c - item.amount);
+                              }}>
+                                <Trash2 size={13}/>
+                              </button>
+                            </div>
+                          </td>
                         </tr>
-                      </thead>
-                      <tbody>
-                        {curExp.sort((a,b) => new Date(b.date) - new Date(a.date)).map(item => (
-                          <tr key={item.id}>
-                            <td style={{ color: 'var(--text-secondary)', fontWeight: 500 }}>{fmtDate(item.date)}</td>
-                            <td><span className="badge" style={{ background: 'var(--red-bg)', color: 'var(--red)', padding: '2px 8px', borderRadius: 4, fontSize: '0.75rem', fontWeight: 600 }}>{item.category || 'Others'}</span></td>
-                            <td style={{ fontWeight: 700, color: 'var(--red)' }}>-{fmt(item.amount)}</td>
-                            <td style={{ textAlign: 'right' }}>
-                              <div className="action-btns" style={{ justifyContent: 'flex-end' }}>
-                                <button className="btn-icon" title="Edit" onClick={() => openModal('Edit Expense', 'expenses', item)}>
-                                  <Edit3 size={13}/>
-                                </button>
-                                <button className="btn-icon danger" title="Delete" onClick={() => {
-                                  if(!window.confirm('Delete this expense?')) return;
-                                  setExpenses(p => p.filter(x => x.id !== item.id));
-                                  setCash(c => c + item.amount);
-                                }}>
-                                  <Trash2 size={13}/>
-                                </button>
-                              </div>
-                            </td>
-                          </tr>
-                        ))}
-                        {curExp.length === 0 && <tr><td colSpan="4" className="empty-state">No expenses this month</td></tr>}
-                      </tbody>
-                    </table>
-                  </div>
-
+                      ))}
+                      {curInc.length === 0 && <tr><td colSpan="4" className="empty-state">No income this month</td></tr>}
+                    </tbody>
+                  </table>
                 </div>
 
-                {/* RIGHT COLUMN: CATEGORY CHART */}
-                <div className="cred-card" style={{ padding: 0, height: 'fit-content' }}>
-                  <div className="panel-header" style={{ background: 'transparent', borderBottom: '1px solid var(--border)' }}>
-                    <PieChart size={16} style={{ color: 'var(--red)' }}/>
-                    <h3>Expense Breakdown</h3>
+                {/* EXPENSES TABLE */}
+                <div className="data-table-wrap" style={{ marginTop: 0 }}>
+                  <div className="panel-header" style={{ background: 'transparent', borderBottom: '1px solid rgba(0,0,0,0.05)', padding: '1rem 1.25rem' }}>
+                    <h3 style={{ color: 'var(--red)' }}>Recent Expenses</h3>
                   </div>
-                  <div className="panel-body" style={{ height: 260, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1rem' }}>
-                    {totExp > 0 ? (
-                      <Doughnut data={expenseCatDoughnutData} options={doughnutOpts}/>
-                    ) : (
-                      <div className="empty-state">No expenses recorded for breakdown</div>
-                    )}
-                  </div>
+                  <table className="data-table">
+                    <thead>
+                      <tr>
+                        <th>Date</th>
+                        <th>Category</th>
+                        <th>Amount (₹)</th>
+                        <th style={{ textAlign: 'right' }}>Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {curExp.sort((a,b) => new Date(b.date) - new Date(a.date)).map(item => (
+                        <tr key={item.id}>
+                          <td style={{ color: 'var(--text-secondary)', fontWeight: 500 }}>{fmtDate(item.date)}</td>
+                          <td><span className="badge" style={{ background: 'var(--red-bg)', color: 'var(--red)', padding: '2px 8px', borderRadius: 4, fontSize: '0.75rem', fontWeight: 600 }}>{item.category || 'Others'}</span></td>
+                          <td style={{ fontWeight: 700, color: 'var(--red)' }}>-{fmt(item.amount)}</td>
+                          <td style={{ textAlign: 'right' }}>
+                            <div className="action-btns" style={{ justifyContent: 'flex-end' }}>
+                              <button className="btn-icon" title="Edit" onClick={() => openModal('Edit Expense', 'expenses', item)}>
+                                <Edit3 size={13}/>
+                              </button>
+                              <button className="btn-icon danger" title="Delete" onClick={() => {
+                                if(!window.confirm('Delete this expense?')) return;
+                                setExpenses(p => p.filter(x => x.id !== item.id));
+                                setCash(c => c + item.amount);
+                              }}>
+                                <Trash2 size={13}/>
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                      {curExp.length === 0 && <tr><td colSpan="4" className="empty-state">No expenses this month</td></tr>}
+                    </tbody>
+                  </table>
                 </div>
-
               </div>
             </div>
           )}
