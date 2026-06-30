@@ -19,19 +19,38 @@ ChartJS.register(CategoryScale, LinearScale, BarElement, LineElement, PointEleme
 // ─────────────────────────────────────────────
 //   SEED DATA
 // ─────────────────────────────────────────────
-const DEFAULT_CASH = 0;
+const DEFAULT_CASH = 5000;
 
-const DUMMY_INCOMES = [];
+const INCOME_CATEGORIES = ['Salary', 'Business', 'Investment', 'Gifts', 'Others'];
+const EXPENSE_CATEGORIES = ['Food', 'Rent', 'Utilities', 'Entertainment', 'Shopping', 'Travel', 'Others'];
 
-const DUMMY_EXPENSES = [];
+const DUMMY_INCOMES = [
+  { id: 1, date: new Date().toISOString().split('T')[0], amount: 50000, category: 'Salary' },
+  { id: 2, date: new Date().toISOString().split('T')[0], amount: 5000, category: 'Investment' }
+];
 
-const DUMMY_BANKS = [];
+const DUMMY_EXPENSES = [
+  { id: 3, date: new Date().toISOString().split('T')[0], amount: 12000, category: 'Rent' },
+  { id: 4, date: new Date().toISOString().split('T')[0], amount: 2500, category: 'Food' },
+  { id: 5, date: new Date().toISOString().split('T')[0], amount: 1500, category: 'Travel' }
+];
 
-const DUMMY_CARDS = [];
+const DUMMY_BANKS = [
+  { id: 101, bankName: 'SBI', type: 'Savings', accountNumber: '1234', balance: 45000 },
+  { id: 102, bankName: 'HDFC', type: 'Salary', accountNumber: '5678', balance: 85000 }
+];
 
-const DUMMY_BORROWERS = [];
+const DUMMY_CARDS = [
+  { id: 201, bankName: 'ICICI', cardName: 'Amazon Pay', cardNumber: '9876', limit: 150000, outstanding: 24000 }
+];
 
-const DUMMY_SAMITIS = [];
+const DUMMY_BORROWERS = [
+  { id: 301, name: 'Rohan Sharma', principal: 10000, repaid: 2000, date: new Date().toISOString().split('T')[0] }
+];
+
+const DUMMY_SAMITIS = [
+  { id: 401, receiverName: 'Mohit Kumar', dailyAmount: 500, year: new Date().getFullYear(), month: new Date().getMonth() }
+];
 
 // ─────────────────────────────────────────────
 //   HELPERS
@@ -43,67 +62,7 @@ const fmtDate = (s) => new Date(s).toLocaleDateString('en-GB', { day: '2-digit',
 //   APP
 // ─────────────────────────────────────────────
 export default function App() {
-  const [isAuthenticated, setIsAuthenticated] = useState(() => sessionStorage.getItem('fi_auth') === 'true');
-  const [isUnlocking, setIsUnlocking] = useState(false);
-  const [pinInput, setPinInput] = useState('');
-  const [pinError, setPinError] = useState('');
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  
-  // DEFAULT PIN
-  const CORRECT_PIN = '1234';
-
-  const handleLogin = (e) => {
-    e.preventDefault();
-    if (pinInput === CORRECT_PIN) {
-      setIsUnlocking(true);
-      setTimeout(() => {
-        setIsAuthenticated(true);
-        sessionStorage.setItem('fi_auth', 'true');
-        setIsUnlocking(false);
-      }, 500);
-    } else {
-      setPinError('Incorrect PIN');
-      setPinInput('');
-    }
-  };
-
-  if (!isAuthenticated) {
-    return (
-      <div className="app-container" style={{ justifyContent: 'center', alignItems: 'center' }}>
-        <div className="panel" style={{ width: 340, padding: '2.5rem 2rem', textAlign: 'center', animation: 'slideUp 0.4s ease' }}>
-          <div className="brand-icon" style={{ margin: '0 auto 1.5rem', width: 64, height: 64 }}>
-            <Wallet size={32} />
-          </div>
-          <h2 style={{ marginBottom: '0.5rem', fontSize: '1.6rem', fontWeight: 900 }}>Finance Buddy</h2>
-          <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginBottom: '1.75rem', fontWeight: 500 }}>Enter your secure PIN to unlock</p>
-          
-          <form onSubmit={handleLogin}>
-            <div className="form-group" style={{ marginBottom: '1.25rem' }}>
-              <input 
-                type="password" 
-                placeholder="••••" 
-                value={pinInput} 
-                onChange={e => { setPinInput(e.target.value); setPinError(''); }}
-                autoFocus
-                style={{ textAlign: 'center', letterSpacing: '0.75rem', fontSize: '1.75rem', padding: '14px', borderRadius: '1rem' }}
-                maxLength={6}
-              />
-            </div>
-            {pinError && <div style={{ color: 'var(--red)', fontSize: '0.85rem', marginBottom: '1rem', fontWeight: 800 }}>{pinError}</div>}
-            <button type="submit" disabled={isUnlocking} className="btn btn-primary" style={{ width: '100%', justifyContent: 'center', height: '52px', fontSize: '1.05rem', borderRadius: '1rem', opacity: isUnlocking ? 0.7 : 1, transition: 'all 0.2s' }}>
-              {isUnlocking ? (
-                <>
-                  <Loader size={18} className="spin" style={{ marginRight: 8 }} />
-                  Unlocking...
-                </>
-              ) : 'Unlock App'}
-            </button>
-          </form>
-        </div>
-      </div>
-    );
-  }
-
   const [view, setView]         = useState('home');
   const [month, setMonth]       = useState(new Date());
 
@@ -126,9 +85,13 @@ export default function App() {
 
   // Modal state
   const [modal,   setModal]   = useState({ open: false, title: '', type: '', item: null });
+  const [quickType, setQuickType] = useState('expense');
   const [detail,  setDetail]  = useState({ open: false, item: null, type: '' });
 
-  const openModal  = (title, type, item = null) => setModal({ open: true, title, type, item });
+  const openModal  = (title, type, item = null) => {
+    if (type === 'quick-log') setQuickType('expense');
+    setModal({ open: true, title, type, item });
+  };
   const closeModal = () => setModal({ open: false, title: '', type: '', item: null });
   const openDetail = (item, type) => setDetail({ open: true, item, type });
   const closeDetail = () => setDetail({ open: false, item: null, type: '' });
@@ -231,6 +194,20 @@ export default function App() {
     datasets: [{
       data: [totalWealth, lentOut, ccDebt],
       backgroundColor: ['#3B82F6', '#10B981', '#EF4444'],
+      borderWidth: 0,
+      hoverOffset: 4
+    }]
+  };
+
+  const expenseCatBreakdown = EXPENSE_CATEGORIES.map(cat => 
+    curExp.filter(x => (x.category || 'Others') === cat).reduce((s, x) => s + x.amount, 0)
+  );
+
+  const expenseCatDoughnutData = {
+    labels: EXPENSE_CATEGORIES,
+    datasets: [{
+      data: expenseCatBreakdown,
+      backgroundColor: ['#F59E0B', '#EF4444', '#3B82F6', '#8B5CF6', '#EC4899', '#10B981', '#9CA3AF'],
       borderWidth: 0,
       hoverOffset: 4
     }]
@@ -362,11 +339,11 @@ export default function App() {
                   if (!date || (inc === 0 && exp === 0)) { alert('Enter a date and at least one amount.'); return; }
                   
                   if (inc > 0) {
-                    setIncomes(p => [{ id: Date.now(), date, amount: inc }, ...p]);
+                    setIncomes(p => [{ id: Date.now(), date, amount: inc, category: 'Others' }, ...p]);
                     setCash(c => c + inc);
                   }
                   if (exp > 0) {
-                    setExpenses(p => [{ id: Date.now() + 1, date, amount: exp }, ...p]);
+                    setExpenses(p => [{ id: Date.now() + 1, date, amount: exp, category: 'Others' }, ...p]);
                     setCash(c => c - exp);
                   }
                   f.reset();
@@ -585,84 +562,109 @@ export default function App() {
                 <StatCard icon={<TrendingUp size={18}/>} color="blue" label="Net Cashflow" value={fmt(totInc - totExp)} valueColor={totInc - totExp >= 0 ? "blue" : "red"} />
               </div>
 
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.25rem' }}>
-                {/* INCOMES COLUMN */}
-                <div className="data-table-wrap" style={{ marginTop: 0 }}>
-                  <div className="panel-header" style={{ background: 'transparent', borderBottom: '1px solid rgba(0,0,0,0.05)', padding: '1rem 1.25rem' }}>
-                    <h3 style={{ color: 'var(--green)' }}>Recent Income</h3>
-                  </div>
-                  <table className="data-table">
-                    <thead>
-                      <tr>
-                        <th>Date</th>
-                        <th>Amount</th>
-                        <th style={{ textAlign: 'right' }}>Actions</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {curInc.sort((a,b) => new Date(b.date) - new Date(a.date)).map(item => (
-                        <tr key={item.id}>
-                          <td style={{ color: 'var(--text-secondary)', fontWeight: 500 }}>{fmtDate(item.date)}</td>
-                          <td style={{ fontWeight: 700, color: 'var(--green)' }}>+{fmt(item.amount)}</td>
-                          <td style={{ textAlign: 'right' }}>
-                            <div className="action-btns" style={{ justifyContent: 'flex-end' }}>
-                              <button className="btn-icon" title="Edit" onClick={() => openModal('Edit Income', 'income', item)}>
-                                <Edit3 size={13}/>
-                              </button>
-                              <button className="btn-icon danger" title="Delete" onClick={() => {
-                                if(!window.confirm('Delete this income?')) return;
-                                setIncomes(p => p.filter(x => x.id !== item.id));
-                                setCash(c => c - item.amount);
-                              }}>
-                                <Trash2 size={13}/>
-                              </button>
-                            </div>
-                          </td>
+              <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '1.25rem' }} className="cashflow-grid">
+                {/* LEFT COLUMN: TABLES */}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+                  
+                  {/* INCOMES TABLE */}
+                  <div className="data-table-wrap" style={{ marginTop: 0 }}>
+                    <div className="panel-header" style={{ background: 'transparent', borderBottom: '1px solid rgba(0,0,0,0.05)', padding: '1rem 1.25rem' }}>
+                      <h3 style={{ color: 'var(--green)' }}>Recent Income</h3>
+                    </div>
+                    <table className="data-table">
+                      <thead>
+                        <tr>
+                          <th>Date</th>
+                          <th>Category</th>
+                          <th>Amount</th>
+                          <th style={{ textAlign: 'right' }}>Actions</th>
                         </tr>
-                      ))}
-                      {curInc.length === 0 && <tr><td colSpan="3" className="empty-state">No income this month</td></tr>}
-                    </tbody>
-                  </table>
+                      </thead>
+                      <tbody>
+                        {curInc.sort((a,b) => new Date(b.date) - new Date(a.date)).map(item => (
+                          <tr key={item.id}>
+                            <td style={{ color: 'var(--text-secondary)', fontWeight: 500 }}>{fmtDate(item.date)}</td>
+                            <td><span className="badge" style={{ background: 'var(--green-bg)', color: 'var(--green)', padding: '2px 8px', borderRadius: 4, fontSize: '0.75rem', fontWeight: 600 }}>{item.category || 'Others'}</span></td>
+                            <td style={{ fontWeight: 700, color: 'var(--green)' }}>+{fmt(item.amount)}</td>
+                            <td style={{ textAlign: 'right' }}>
+                              <div className="action-btns" style={{ justifyContent: 'flex-end' }}>
+                                <button className="btn-icon" title="Edit" onClick={() => openModal('Edit Income', 'income', item)}>
+                                  <Edit3 size={13}/>
+                                </button>
+                                <button className="btn-icon danger" title="Delete" onClick={() => {
+                                  if(!window.confirm('Delete this income?')) return;
+                                  setIncomes(p => p.filter(x => x.id !== item.id));
+                                  setCash(c => c - item.amount);
+                                }}>
+                                  <Trash2 size={13}/>
+                                </button>
+                              </div>
+                            </td>
+                          </tr>
+                        ))}
+                        {curInc.length === 0 && <tr><td colSpan="4" className="empty-state">No income this month</td></tr>}
+                      </tbody>
+                    </table>
+                  </div>
+
+                  {/* EXPENSES TABLE */}
+                  <div className="data-table-wrap" style={{ marginTop: 0 }}>
+                    <div className="panel-header" style={{ background: 'transparent', borderBottom: '1px solid rgba(0,0,0,0.05)', padding: '1rem 1.25rem' }}>
+                      <h3 style={{ color: 'var(--red)' }}>Recent Expenses</h3>
+                    </div>
+                    <table className="data-table">
+                      <thead>
+                        <tr>
+                          <th>Date</th>
+                          <th>Category</th>
+                          <th>Amount</th>
+                          <th style={{ textAlign: 'right' }}>Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {curExp.sort((a,b) => new Date(b.date) - new Date(a.date)).map(item => (
+                          <tr key={item.id}>
+                            <td style={{ color: 'var(--text-secondary)', fontWeight: 500 }}>{fmtDate(item.date)}</td>
+                            <td><span className="badge" style={{ background: 'var(--red-bg)', color: 'var(--red)', padding: '2px 8px', borderRadius: 4, fontSize: '0.75rem', fontWeight: 600 }}>{item.category || 'Others'}</span></td>
+                            <td style={{ fontWeight: 700, color: 'var(--red)' }}>-{fmt(item.amount)}</td>
+                            <td style={{ textAlign: 'right' }}>
+                              <div className="action-btns" style={{ justifyContent: 'flex-end' }}>
+                                <button className="btn-icon" title="Edit" onClick={() => openModal('Edit Expense', 'expenses', item)}>
+                                  <Edit3 size={13}/>
+                                </button>
+                                <button className="btn-icon danger" title="Delete" onClick={() => {
+                                  if(!window.confirm('Delete this expense?')) return;
+                                  setExpenses(p => p.filter(x => x.id !== item.id));
+                                  setCash(c => c + item.amount);
+                                }}>
+                                  <Trash2 size={13}/>
+                                </button>
+                              </div>
+                            </td>
+                          </tr>
+                        ))}
+                        {curExp.length === 0 && <tr><td colSpan="4" className="empty-state">No expenses this month</td></tr>}
+                      </tbody>
+                    </table>
+                  </div>
+
                 </div>
 
-                {/* EXPENSES COLUMN */}
-                <div className="data-table-wrap" style={{ marginTop: 0 }}>
-                  <div className="panel-header" style={{ background: 'transparent', borderBottom: '1px solid rgba(0,0,0,0.05)', padding: '1rem 1.25rem' }}>
-                    <h3 style={{ color: 'var(--red)' }}>Recent Expenses</h3>
+                {/* RIGHT COLUMN: CATEGORY CHART */}
+                <div className="cred-card" style={{ padding: 0, height: 'fit-content' }}>
+                  <div className="panel-header" style={{ background: 'transparent', borderBottom: '1px solid var(--border)' }}>
+                    <PieChart size={16} style={{ color: 'var(--red)' }}/>
+                    <h3>Expense Breakdown</h3>
                   </div>
-                  <table className="data-table">
-                    <thead>
-                      <tr>
-                        <th>Date</th>
-                        <th>Amount</th>
-                        <th style={{ textAlign: 'right' }}>Actions</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {curExp.sort((a,b) => new Date(b.date) - new Date(a.date)).map(item => (
-                        <tr key={item.id}>
-                          <td style={{ color: 'var(--text-secondary)', fontWeight: 500 }}>{fmtDate(item.date)}</td>
-                          <td style={{ fontWeight: 700, color: 'var(--red)' }}>-{fmt(item.amount)}</td>
-                          <td style={{ textAlign: 'right' }}>
-                            <div className="action-btns" style={{ justifyContent: 'flex-end' }}>
-                              <button className="btn-icon" title="Edit" onClick={() => openModal('Edit Expense', 'expenses', item)}>
-                                <Edit3 size={13}/>
-                              </button>
-                              <button className="btn-icon danger" title="Delete" onClick={() => {
-                                if(!window.confirm('Delete this expense?')) return;
-                                setExpenses(p => p.filter(x => x.id !== item.id));
-                                setCash(c => c + item.amount);
-                              }}>
-                                <Trash2 size={13}/>
-                              </button>
-                            </div>
-                          </td>
-                        </tr>
-                      ))}
-                      {curExp.length === 0 && <tr><td colSpan="3" className="empty-state">No expenses this month</td></tr>}
-                    </tbody>
-                  </table>
+                  <div className="panel-body" style={{ height: 260, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1rem' }}>
+                    {totExp > 0 ? (
+                      <Doughnut data={expenseCatDoughnutData} options={doughnutOpts}/>
+                    ) : (
+                      <div className="empty-state">No expenses recorded for breakdown</div>
+                    )}
+                  </div>
                 </div>
+
               </div>
             </div>
           )}
@@ -951,6 +953,10 @@ export default function App() {
                       </div>
 
                       <div style={{ display: 'flex', gap: 8 }}>
+                        <button className="btn btn-ghost" style={{ height: '40px', padding: '0 16px', color: 'var(--text-primary)', border: '1px solid var(--border-strong)' }}
+                          onClick={() => openModal('Edit Samiti', 'samiti', s)}>
+                          <Edit3 size={16}/>
+                        </button>
                         <button className="btn btn-danger" style={{ height: '40px', padding: '0 16px' }}
                           onClick={() => { if (confirm(`Delete Samiti for ${s.receiverName}?`)) setSamitis(p => p.filter(x => x.id !== s.id)); }}>
                           <Trash2 size={16}/>
@@ -984,13 +990,13 @@ export default function App() {
                 <form className="form-grid" onSubmit={e => {
                   e.preventDefault();
                   const f = e.target;
-                  const date = f.date.value, amount = parseFloat(f.amount.value) || 0, type = f.type.value;
+                  const date = f.date.value, amount = parseFloat(f.amount.value) || 0, type = f.type.value, category = f.category.value;
                   if (!date || amount <= 0) { alert('Enter a date and amount.'); return; }
                   if (type === 'income') {
-                    setIncomes(p => [...p, { id: Date.now(), date, amount }]);
+                    setIncomes(p => [...p, { id: Date.now(), date, amount, category }]);
                     setCash(c => c + amount);
                   } else {
-                    setExpenses(p => [...p, { id: Date.now(), date, amount }]);
+                    setExpenses(p => [...p, { id: Date.now(), date, amount, category }]);
                     setCash(c => c - amount);
                   }
                   closeModal();
@@ -1002,6 +1008,7 @@ export default function App() {
                   <div className="form-group">
                     <label>Type</label>
                     <select name="type" onChange={e => {
+                      setQuickType(e.target.value);
                       const input = e.target.form.amount;
                       input.style.color = e.target.value === 'income' ? 'var(--green)' : 'var(--red)';
                     }}>
@@ -1010,6 +1017,14 @@ export default function App() {
                     </select>
                   </div>
                   <div className="form-group">
+                    <label>Category</label>
+                    <select name="category">
+                      {(quickType === 'income' ? INCOME_CATEGORIES : EXPENSE_CATEGORIES).map(cat => (
+                        <option key={cat}>{cat}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div className="form-group full">
                     <label>Amount (₹)</label>
                     <input name="amount" type="number" placeholder="0" min="1" required style={{ color: 'var(--red)', fontWeight: 'bold' }}/>
                   </div>
@@ -1022,14 +1037,14 @@ export default function App() {
                 <form className="form-grid" onSubmit={e => {
                   e.preventDefault();
                   const f = e.target;
-                  const date = f.date.value, amount = parseFloat(f.amount.value) || 0;
+                  const date = f.date.value, amount = parseFloat(f.amount.value) || 0, category = f.category.value;
                   if (!date || amount <= 0) return;
                   const isInc = modal.type === 'income';
                   const setter = isInc ? setIncomes : setExpenses;
                   if (modal.item) {
-                    setter(p => p.map(x => x.id === modal.item.id ? { ...x, date, amount } : x));
+                    setter(p => p.map(x => x.id === modal.item.id ? { ...x, date, amount, category } : x));
                   } else {
-                    setter(p => [...p, { id: Date.now(), date, amount }]);
+                    setter(p => [...p, { id: Date.now(), date, amount, category }]);
                   }
                   closeModal();
                   closeDetail();
@@ -1039,6 +1054,14 @@ export default function App() {
                     <input name="date" type="date" required defaultValue={modal.item?.date ?? new Date().toISOString().split('T')[0]}/>
                   </div>
                   <div className="form-group">
+                    <label>Category</label>
+                    <select name="category" defaultValue={modal.item?.category || 'Others'}>
+                      {(modal.type === 'income' ? INCOME_CATEGORIES : EXPENSE_CATEGORIES).map(cat => (
+                        <option key={cat}>{cat}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div className="form-group full">
                     <label>Amount (₹)</label>
                     <input name="amount" type="number" required placeholder="0" min="1" defaultValue={modal.item?.amount ?? ''} style={{ color: modal.type === 'income' ? 'var(--green)' : 'var(--red)', fontWeight: 'bold' }}/>
                   </div>
@@ -1162,19 +1185,23 @@ export default function App() {
                   const f = e.target;
                   const name = f.name.value, amt = parseFloat(f.amt.value) || 0;
                   if (name && amt > 0) {
-                    setSamitis(p => [...p, { id: Date.now(), receiverName: name, dailyAmount: amt, year: month.getFullYear(), month: month.getMonth() }]);
+                    if (modal.item) {
+                      setSamitis(p => p.map(s => s.id === modal.item.id ? { ...s, receiverName: name, dailyAmount: amt } : s));
+                    } else {
+                      setSamitis(p => [...p, { id: Date.now(), receiverName: name, dailyAmount: amt, year: month.getFullYear(), month: month.getMonth() }]);
+                    }
                     closeModal();
                   }
                 }}>
                   <div className="form-group">
                     <label>Receiver Name</label>
-                    <input name="name" type="text" required placeholder="e.g. Rajesh Bhai"/>
+                    <input name="name" type="text" required placeholder="e.g. Rajesh Bhai" defaultValue={modal.item?.receiverName || ''}/>
                   </div>
                   <div className="form-group">
                     <label>Daily Deposit (₹)</label>
-                    <input name="amt" type="number" required placeholder="e.g. 500" min="1"/>
+                    <input name="amt" type="number" required placeholder="e.g. 500" min="1" defaultValue={modal.item?.dailyAmount || ''}/>
                   </div>
-                  <button type="submit" className="btn btn-primary">Add Samiti</button>
+                  <button type="submit" className="btn btn-primary">{modal.item ? 'Update Samiti' : 'Add Samiti'}</button>
                 </form>
               )}
 

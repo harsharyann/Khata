@@ -6,55 +6,55 @@
 
 :root {
   /* Brand / Accent */
-  --accent:        #111827;
-  --accent-soft:   rgba(17, 24, 39, 0.05);
-  --accent-mid:    rgba(17, 24, 39, 0.1);
+  --accent:        #4F46E5;
+  --accent-soft:   rgba(79, 70, 229, 0.05);
+  --accent-mid:    rgba(79, 70, 229, 0.1);
 
   /* Solid Backgrounds - Premium Light */
-  --bg-base:       #F7F5F0;
+  --bg-base:       #F8FAFC;
   --bg-card:       #FFFFFF;
-  --bg-surface:    #FDFBF7;
-  --bg-hover:      #F2EFE9;
+  --bg-surface:    #FFFFFF;
+  --bg-hover:      #F1F5F9;
   --bg-sidebar:    #FFFFFF;
 
   /* Semantic Colors - Vibrant */
   --green:         #10B981;
-  --green-bg:      rgba(16, 185, 129, 0.15);
-  --red:           #EF4444;
-  --red-bg:        rgba(239, 68, 68, 0.1);
+  --green-bg:      rgba(16, 185, 129, 0.08);
+  --red:           #F43F5E;
+  --red-bg:        rgba(244, 63, 94, 0.08);
   --amber:         #F59E0B;
-  --amber-bg:      rgba(245, 158, 11, 0.1);
+  --amber-bg:      rgba(245, 158, 11, 0.08);
   --blue:          #3B82F6;
-  --blue-bg:       rgba(59, 130, 246, 0.1);
+  --blue-bg:       rgba(59, 130, 246, 0.08);
   --purple:        #8B5CF6;
-  --purple-bg:     rgba(139, 92, 246, 0.1);
+  --purple-bg:     rgba(139, 92, 246, 0.08);
 
   /* Typography - Light Mode */
-  --text-primary:   #111827;
-  --text-secondary: #4B5563;
-  --text-muted:     #9CA3AF;
+  --text-primary:   #0F172A;
+  --text-secondary: #475569;
+  --text-muted:     #94A3B8;
   --text-inverse:   #FFFFFF;
 
   /* Crisp Borders - Subtle */
-  --border:        #E8E4D9;
-  --border-strong: #DCD6C8;
+  --border:        #E2E8F0;
+  --border-strong: #CBD5E1;
 
   /* Shadows — Soft Premium SaaS */
-  --shadow-xs: 0 1px 2px 0 rgba(0, 0, 0, 0.02);
-  --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.05), 0 1px 2px -1px rgba(0, 0, 0, 0.03);
-  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -2px rgba(0, 0, 0, 0.03);
-  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -4px rgba(0, 0, 0, 0.025);
-  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.01);
+  --shadow-xs: 0 1px 2px 0 rgba(15, 23, 42, 0.02);
+  --shadow-sm: 0 2px 8px 0 rgba(15, 23, 42, 0.04);
+  --shadow-md: 0 4px 20px -2px rgba(15, 23, 42, 0.05), 0 2px 8px -1px rgba(15, 23, 42, 0.03);
+  --shadow-lg: 0 12px 30px -4px rgba(15, 23, 42, 0.06), 0 4px 12px -2px rgba(15, 23, 42, 0.04);
+  --shadow-xl: 0 24px 48px -6px rgba(15, 23, 42, 0.08);
 
   /* Radii */
   --r-sm:  8px;
   --r-md:  12px;
   --r-lg:  16px;
-  --r-xl:  24px;
-  --r-2xl: 32px;
+  --r-xl:  20px;
+  --r-2xl: 28px;
 
   /* Font */
-  --font: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font: 'Outfit', 'Inter', -apple-system, sans-serif;
 
   /* Transitions */
   --ease: cubic-bezier(0.4, 0, 0.2, 1);
@@ -71,7 +71,7 @@ html { scroll-behavior: smooth; }
 
 body {
   font-family: var(--font);
-  background-color: #FDFBF7;
+  background-color: var(--bg-base);
   color: var(--text-primary);
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;
