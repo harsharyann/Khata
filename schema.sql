@@ -1,6 +1,16 @@
 -- SQL Schema setup for Finance Buddy application
 -- Run this in your Supabase SQL Editor.
 
+-- Warning: This will delete all existing data in these tables!
+DROP TABLE IF EXISTS samiti_payments CASCADE;
+DROP TABLE IF EXISTS samitis CASCADE;
+DROP TABLE IF EXISTS borrowers CASCADE;
+DROP TABLE IF EXISTS credit_cards CASCADE;
+DROP TABLE IF EXISTS banks CASCADE;
+DROP TABLE IF EXISTS expenses CASCADE;
+DROP TABLE IF EXISTS incomes CASCADE;
+DROP TABLE IF EXISTS profiles CASCADE;
+
 -- 1. Create INCOMES table
 CREATE TABLE IF NOT EXISTS incomes (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
