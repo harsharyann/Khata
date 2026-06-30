@@ -4,7 +4,7 @@ import {
   Users, CreditCard, Target, Calendar, Plus, Trash2,
   Edit3, Eye, CalendarCheck, ArrowRightLeft, X, Wallet,
   Building, CheckCircle, AlertTriangle, ChevronLeft, ChevronRight,
-  BarChart2, ArrowUpRight, ArrowDownRight
+  BarChart2, ArrowUpRight, ArrowDownRight, Menu
 } from 'lucide-react';
 
 import {
@@ -46,6 +46,7 @@ export default function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(() => sessionStorage.getItem('fi_auth') === 'true');
   const [pinInput, setPinInput] = useState('');
   const [pinError, setPinError] = useState('');
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   
   // DEFAULT PIN
   const CORRECT_PIN = '1234';
@@ -282,12 +283,16 @@ export default function App() {
           <span style={{ fontWeight: 900, letterSpacing: '-0.5px' }}>Finance Buddy</span>
         </div>
 
-        <nav className="nav-menu">
+        <button className="mobile-menu-btn" onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>
+          {mobileMenuOpen ? <X size={24} color="var(--text-primary)"/> : <Menu size={24} color="var(--text-primary)"/>}
+        </button>
+
+        <nav className={`nav-menu ${mobileMenuOpen ? 'open' : ''}`}>
           {navItems.map(it => (
             <button
               key={it.id}
               className={`nav-item ${view === it.id ? 'active' : ''}`}
-              onClick={() => setView(it.id)}
+              onClick={() => { setView(it.id); setMobileMenuOpen(false); }}
             >
               <span>{it.label}</span>
             </button>
