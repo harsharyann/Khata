@@ -112,3 +112,36 @@ $$ LANGUAGE plpgsql SECURITY DEFINER;
 CREATE OR REPLACE TRIGGER on_auth_user_created
     AFTER INSERT ON auth.users
     FOR EACH ROW EXECUTE FUNCTION public.handle_new_user();
+
+-- 7. Create SAMITIS table
+CREATE TABLE IF NOT EXISTS samitis (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL,
+    name TEXT NOT NULL,
+    daily_amount NUMERIC NOT NULL,
+    start_date DATE NOT NULL,
+    tenure_months INTEGER NOT NULL,
+    maturity_amount NUMERIC NOT NULL,
+    user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE DEFAULT auth.uid() NOT NULL
+);
+
+ALTER TABLE samitis ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Users can manage their own samitis" 
+    ON samitis FOR ALL 
+    USING (auth.uid() = user_id);
+
+-- 8. Create SAMITI_PAYMENTS table
+CREATE TABLE IF NOT EXISTS samiti_payments (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL,
+    samiti_id UUID REFERENCES samitis(id) ON DELETE CASCADE NOT NULL,
+    payment_date DATE NOT NULL,
+    user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE DEFAULT auth.uid() NOT NULL,
+    UNIQUE(samiti_id, payment_date)
+);
+
+ALTER TABLE samiti_payments ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Users can manage their own samiti payments" 
+    ON samiti_payments FOR ALL 
+    USING (auth.uid() = user_id);
+

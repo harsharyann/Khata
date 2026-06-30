@@ -82,6 +82,8 @@ export default function App() {
   const [cash,        setCash]        = useState(DEFAULT_CASH);
   const [creditCards, setCreditCards] = useState([]);
   const [borrowers,   setBorrowers]   = useState([]);
+  const [samitis,     setSamitis]     = useState([]);
+  const [samitiPayments, setSamitiPayments] = useState([]);
 
   // Auth Lifecycle Hook
   useEffect(() => {
@@ -111,6 +113,8 @@ export default function App() {
       setCash(DEFAULT_CASH);
       setCreditCards([]);
       setBorrowers([]);
+      setSamitis([]);
+      setSamitiPayments([]);
       return;
     }
 
@@ -149,6 +153,14 @@ export default function App() {
         // Fetch borrowers
         const { data: borrowerData } = await supabase.from('borrowers').select('*');
         if (borrowerData) setBorrowers(borrowerData);
+
+        // Fetch samitis
+        const { data: samitiData } = await supabase.from('samitis').select('*');
+        if (samitiData) setSamitis(samitiData);
+
+        // Fetch samiti payments
+        const { data: samitiPaymentsData } = await supabase.from('samiti_payments').select('*');
+        if (samitiPaymentsData) setSamitiPayments(samitiPaymentsData);
 
       } catch (err) {
         console.error('Error fetching Supabase data:', err);
@@ -440,6 +452,74 @@ export default function App() {
       alert('Error settling record: ' + error.message);
     } else if (data) {
       setBorrowers(p => p.map(x => x.id === id ? data[0] : x));
+    }
+    setLoading(false);
+  };
+
+  const saveSamiti = async (id, name, daily_amount, start_date, tenure_months, maturity_amount) => {
+    setLoading(true);
+    if (id) {
+      const { data, error } = await supabase
+        .from('samitis')
+        .update({ name, daily_amount, start_date, tenure_months, maturity_amount })
+        .eq('id', id)
+        .select();
+      if (error) {
+        alert('Error updating samiti: ' + error.message);
+      } else if (data) {
+        setSamitis(p => p.map(x => x.id === id ? data[0] : x));
+      }
+    } else {
+      const { data, error } = await supabase
+        .from('samitis')
+        .insert([{ name, daily_amount, start_date, tenure_months, maturity_amount, user_id: session.user.id }])
+        .select();
+      if (error) {
+        alert('Error adding samiti: ' + error.message);
+      } else if (data) {
+        setSamitis(p => [...p, data[0]]);
+      }
+    }
+    setLoading(false);
+  };
+
+  const deleteSamiti = async (id) => {
+    setLoading(true);
+    const { error } = await supabase.from('samitis').delete().eq('id', id);
+    if (error) {
+      alert('Error deleting samiti: ' + error.message);
+    } else {
+      setSamitis(p => p.filter(x => x.id !== id));
+      setSamitiPayments(p => p.filter(x => x.samiti_id !== id));
+    }
+    setLoading(false);
+  };
+
+  const toggleSamitiPayment = async (samiti_id, payment_date, isPaid) => {
+    setLoading(true);
+    if (isPaid) {
+      const { error } = await supabase
+        .from('samiti_payments')
+        .delete()
+        .eq('samiti_id', samiti_id)
+        .eq('payment_date', payment_date);
+      if (error) {
+        alert('Error unmarking payment: ' + error.message);
+      } else {
+        setSamitiPayments(p => p.filter(x => !(x.samiti_id === samiti_id && x.payment_date === payment_date)));
+      }
+    } else {
+      const { data, error } = await supabase
+        .from('samiti_payments')
+        .insert([{ samiti_id, payment_date, user_id: session.user.id }])
+        .select();
+      if (error) {
+        if (!error.message.includes('duplicate key value')) {
+            alert('Error marking payment: ' + error.message);
+        }
+      } else if (data) {
+        setSamitiPayments(p => [...p, data[0]]);
+      }
     }
     setLoading(false);
   };
@@ -1546,13 +1626,108 @@ export default function App() {
 
           {/* ══ SAMITI ══ */}
           {view === 'samiti' && (
-            <div className="fade-in-view" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '60vh', textAlign: 'center', gap: '1.5rem' }}>
-              <div style={{ fontSize: '4rem' }}>🚧</div>
-              <div>
-                <h1 style={{ fontSize: '2rem', fontWeight: 900, color: 'var(--text-primary)', letterSpacing: '-0.5px' }}>Coming Soon</h1>
-                <p style={{ fontSize: '1rem', color: 'var(--text-muted)', marginTop: '0.5rem', fontWeight: 500 }}>Samiti is being rebuilt from scratch.</p>
+            <div className="fade-in-view">
+              <div className="page-header">
+                <div className="page-header-left">
+                  <span className="eyebrow">Recurring Deposits</span>
+                  <h1>Samiti Tracker</h1>
+                </div>
+                <div className="page-header-right">
+                  <button className="btn btn-primary" onClick={() => openModal('Create Samiti', 'samiti')}>
+                    <Plus size={15}/> New Samiti
+                  </button>
+                </div>
               </div>
-              <span style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-secondary)', background: 'var(--bg-hover)', padding: '6px 16px', borderRadius: 99, border: '1px solid var(--border)' }}>Work in progress</span>
+
+              <div className="item-grid" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(340px, 1fr))' }}>
+                {samitis.map(samiti => {
+                  const sDate = new Date(samiti.start_date);
+                  const mDate = new Date(sDate);
+                  mDate.setMonth(mDate.getMonth() + samiti.tenure_months);
+                  
+                  const sPayments = samitiPayments.filter(p => p.samiti_id === samiti.id);
+                  const totalPaid = sPayments.length * samiti.daily_amount;
+                  const progressPct = samiti.maturity_amount > 0 ? Math.min(100, (totalPaid / samiti.maturity_amount) * 100) : 0;
+
+                  const last7Days = Array.from({length: 7}, (_, i) => {
+                    const d = new Date();
+                    d.setDate(d.getDate() - (6 - i));
+                    return d.toISOString().split('T')[0];
+                  });
+
+                  return (
+                    <div key={samiti.id} className="item-card" style={{ display: 'flex', flexDirection: 'column', gap: '1rem', borderTop: '4px solid var(--purple)' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                        <div>
+                          <h3 style={{ fontSize: '1.2rem', fontWeight: 800, color: 'var(--text-primary)', marginBottom: '4px' }}>{samiti.name}</h3>
+                          <span className="badge purple" style={{ fontSize: '0.7rem' }}>{samiti.tenure_months} Months</span>
+                        </div>
+                        <div style={{ display: 'flex', gap: 6 }}>
+                          <button className="btn-icon" onClick={() => openModal('Edit Samiti', 'samiti', samiti)}><Edit3 size={14}/></button>
+                          <button className="btn-icon danger" onClick={() => { if(confirm('Delete Samiti?')) deleteSamiti(samiti.id); }}><Trash2 size={14}/></button>
+                        </div>
+                      </div>
+
+                      <div className="detail-grid" style={{ margin: '0', gridTemplateColumns: '1fr 1fr 1fr' }}>
+                        <div style={{ display: 'flex', flexDirection: 'column' }}>
+                          <span style={{ fontSize: '0.7rem', fontWeight: 700, color: 'var(--text-secondary)', textTransform: 'uppercase' }}>Daily</span>
+                          <span style={{ fontSize: '1.05rem', fontWeight: 800, color: 'var(--text-primary)' }}>{fmt(samiti.daily_amount)}</span>
+                        </div>
+                        <div style={{ display: 'flex', flexDirection: 'column' }}>
+                          <span style={{ fontSize: '0.7rem', fontWeight: 700, color: 'var(--text-secondary)', textTransform: 'uppercase' }}>Paid</span>
+                          <span style={{ fontSize: '1.05rem', fontWeight: 800, color: 'var(--green)' }}>{fmt(totalPaid)}</span>
+                        </div>
+                        <div style={{ display: 'flex', flexDirection: 'column' }}>
+                          <span style={{ fontSize: '0.7rem', fontWeight: 700, color: 'var(--text-secondary)', textTransform: 'uppercase' }}>Maturity</span>
+                          <span style={{ fontSize: '1.05rem', fontWeight: 800, color: 'var(--text-primary)' }}>{fmt(samiti.maturity_amount)}</span>
+                        </div>
+                      </div>
+
+                      <div>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-muted)', marginBottom: 6 }}>
+                          <span>Start: {fmtDate(samiti.start_date)}</span>
+                          <span>End: {fmtDate(mDate)}</span>
+                        </div>
+                        <div className="progress-bar-wrap">
+                          <div className="progress-bar-fill purple" style={{ width: `${progressPct}%`, background: 'var(--purple)' }}></div>
+                        </div>
+                      </div>
+
+                      <div style={{ background: 'var(--bg-hover)', padding: '12px', borderRadius: 'var(--r-md)', border: '1px solid var(--border)' }}>
+                        <div style={{ fontSize: '0.75rem', fontWeight: 800, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 8, display: 'flex', justifyContent: 'space-between' }}>
+                          <span>Daily Markup (Last 7 Days)</span>
+                        </div>
+                        <div style={{ display: 'flex', gap: '6px', justifyContent: 'space-between' }}>
+                          {last7Days.map(dateStr => {
+                            const isPaid = sPayments.some(p => p.payment_date === dateStr);
+                            const dayName = new Date(dateStr).toLocaleDateString('en-US', { weekday: 'short' }).charAt(0);
+                            const dayNum = dateStr.split('-')[2];
+                            return (
+                              <button 
+                                key={dateStr}
+                                onClick={() => toggleSamitiPayment(samiti.id, dateStr, isPaid)}
+                                style={{
+                                  display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+                                  width: '36px', height: '46px', borderRadius: '8px',
+                                  background: isPaid ? 'var(--green)' : 'var(--bg-card)',
+                                  color: isPaid ? 'white' : 'var(--text-secondary)',
+                                  border: isPaid ? 'none' : '1px solid var(--border-strong)',
+                                  cursor: 'pointer', transition: 'all 0.2s', padding: 0
+                                }}
+                                title={dateStr}
+                              >
+                                <span style={{ fontSize: '0.65rem', fontWeight: 800, opacity: 0.9 }}>{dayName}</span>
+                                <span style={{ fontSize: '0.85rem', fontWeight: 800 }}>{dayNum}</span>
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+                {samitis.length === 0 && <div className="empty-state bento-col-12" style={{ gridColumn: '1 / -1' }}>No Samitis created yet. Start investing!</div>}
+              </div>
             </div>
           )}
 
@@ -1746,6 +1921,45 @@ export default function App() {
                     <input name="date" type="date" required defaultValue={modal.item?.date || new Date().toISOString().split('T')[0]}/>
                   </div>
                   <button type="submit" className="btn btn-primary">Log Borrower</button>
+                </form>
+              )}
+
+              {/* Samiti */}
+              {modal.type === 'samiti' && (
+                <form className="form-grid" onSubmit={e => {
+                  e.preventDefault();
+                  const f = e.target;
+                  const name = f.name.value, 
+                        daily_amount = parseFloat(f.daily_amount.value) || 0, 
+                        start_date = f.start_date.value,
+                        tenure_months = parseInt(f.tenure_months.value) || 0,
+                        maturity_amount = parseFloat(f.maturity_amount.value) || 0;
+                  if (name && daily_amount > 0 && start_date && tenure_months > 0 && maturity_amount > 0) {
+                    saveSamiti(modal.item?.id, name, daily_amount, start_date, tenure_months, maturity_amount);
+                    closeModal();
+                  }
+                }}>
+                  <div className="form-group full">
+                    <label>Samiti Name</label>
+                    <input name="name" type="text" required placeholder="e.g. Diwali Samiti" defaultValue={modal.item?.name || ''}/>
+                  </div>
+                  <div className="form-group">
+                    <label>Daily Amount (₹)</label>
+                    <input name="daily_amount" type="number" required placeholder="0" min="1" defaultValue={modal.item?.daily_amount || ''}/>
+                  </div>
+                  <div className="form-group">
+                    <label>Start Date</label>
+                    <input name="start_date" type="date" required defaultValue={modal.item?.start_date || new Date().toISOString().split('T')[0]}/>
+                  </div>
+                  <div className="form-group">
+                    <label>Tenure (Months)</label>
+                    <input name="tenure_months" type="number" required placeholder="12" min="1" defaultValue={modal.item?.tenure_months || ''}/>
+                  </div>
+                  <div className="form-group">
+                    <label>Expected Maturity (₹)</label>
+                    <input name="maturity_amount" type="number" required placeholder="0" min="1" defaultValue={modal.item?.maturity_amount || ''}/>
+                  </div>
+                  <button type="submit" className="btn btn-primary" style={{ gridColumn: '1 / -1' }}>{modal.item ? 'Update Samiti' : 'Create Samiti'}</button>
                 </form>
               )}
 
