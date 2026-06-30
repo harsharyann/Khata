@@ -145,7 +145,12 @@ const SamitiCalendar = ({ samiti, payments, togglePayment }) => {
 // ─────────────────────────────────────────────
 export default function App() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [view, setView]         = useState('home');
+  const [view, setView]         = useState(() => localStorage.getItem('lastView') || 'home');
+
+  useEffect(() => {
+    localStorage.setItem('lastView', view);
+  }, [view]);
+
   const [month, setMonth]       = useState(new Date());
   const [cashCollapsed, setCashCollapsed] = useState(false);
   const [banksCollapsed, setBanksCollapsed] = useState(false);
