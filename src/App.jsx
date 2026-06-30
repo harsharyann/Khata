@@ -137,13 +137,13 @@ export default function App() {
 
 
   const navItems = [
-    { id: 'home',         label: 'Home' },
-    { id: 'cashflow',     label: 'Cashflow' },
-    { id: 'accounts',     label: 'Wealth' },
-    { id: 'borrowers',    label: 'Lent' },
-    { id: 'credit-cards', label: 'Cards' },
-    { id: 'samiti',       label: 'Samiti' },
-    { id: 'dashboard',    label: 'Dashboard' },
+    { id: 'home',         label: 'Home',      short: 'Home',   icon: <Home size={18}/> },
+    { id: 'cashflow',     label: 'Cashflow',  short: 'Flow',   icon: <ArrowRightLeft size={18}/> },
+    { id: 'accounts',     label: 'Wealth',    short: 'Wealth', icon: <TrendingUp size={18}/> },
+    { id: 'borrowers',    label: 'Lent',      short: 'Lent',   icon: <Users size={18}/> },
+    { id: 'credit-cards', label: 'Cards',     short: 'Cards',  icon: <CreditCard size={18}/> },
+    { id: 'samiti',       label: 'Samiti',    short: 'Samiti', icon: <Target size={18}/> },
+    { id: 'dashboard',    label: 'Dashboard', short: 'Stats',  icon: <BarChart2 size={18}/> },
   ];
 
   // Chart Data Configurations
@@ -273,17 +273,14 @@ export default function App() {
           <span style={{ fontWeight: 900, letterSpacing: '-0.5px' }}>Finance Buddy</span>
         </div>
 
-        <button className="mobile-menu-btn" onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>
-          {mobileMenuOpen ? <X size={24} color="var(--text-primary)"/> : <Menu size={24} color="var(--text-primary)"/>}
-        </button>
-
-        <nav className={`nav-menu ${mobileMenuOpen ? 'open' : ''}`}>
+        <nav className="nav-menu">
           {navItems.map(it => (
             <button
               key={it.id}
               className={`nav-item ${view === it.id ? 'active' : ''}`}
-              onClick={() => { setView(it.id); setMobileMenuOpen(false); }}
+              onClick={() => setView(it.id)}
             >
+              {it.icon}
               <span>{it.label}</span>
             </button>
           ))}
@@ -592,7 +589,7 @@ export default function App() {
                 <StatCard icon={<TrendingUp size={18}/>} color="blue" label="Net Cashflow" value={fmt(totInc - totExp)} valueColor={totInc - totExp >= 0 ? "blue" : "red"} />
               </div>
 
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.25rem' }}>
+              <div className="cashflow-split-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.25rem' }}>
                 {/* INCOMES TABLE */}
                 <div className="data-table-wrap" style={{ marginTop: 0 }}>
                   <div className="panel-header" style={{ background: 'transparent', borderBottom: '1px solid rgba(0,0,0,0.05)', padding: '1rem 1.25rem' }}>
@@ -1369,6 +1366,20 @@ export default function App() {
           </div>
         </div>
       )}
+
+      {/* ═══ BOTTOM NAV (Mobile only) ═══ */}
+      <nav className="bottom-nav">
+        {navItems.map(it => (
+          <button
+            key={it.id}
+            className={`bottom-nav-item ${view === it.id ? 'active' : ''}`}
+            onClick={() => setView(it.id)}
+          >
+            {it.icon}
+            <span>{it.short}</span>
+          </button>
+        ))}
+      </nav>
 
     </div>
   );
