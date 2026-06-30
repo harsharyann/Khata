@@ -85,6 +85,10 @@ export default function App() {
 
   // Auth Lifecycle Hook
   useEffect(() => {
+    if (!supabase) {
+      setLoading(false);
+      return;
+    }
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
       setLoading(false);
@@ -100,7 +104,7 @@ export default function App() {
 
   // Fetch data hook
   useEffect(() => {
-    if (!session) {
+    if (!supabase || !session) {
       setIncomes([]);
       setExpenses([]);
       setBanks([]);
@@ -605,6 +609,25 @@ export default function App() {
   // ─────────────────────────────────────────────────
   //   RENDER
   // ─────────────────────────────────────────────────
+  if (!supabase) {
+    return (
+      <div className="loader-container" style={{ padding: '2rem', textAlign: 'center' }}>
+        <div style={{ fontSize: '3.5rem', marginBottom: '1rem' }}>⚠️</div>
+        <h2 style={{ color: 'var(--red)', fontWeight: 800, fontSize: '1.5rem' }}>Configuration Required</h2>
+        <p style={{ color: 'var(--text-secondary)', maxWidth: '480px', margin: '0.75rem auto 1.5rem', fontSize: '0.9rem', lineHeight: 1.5 }}>
+          Supabase credentials are missing. If you have deployed to Vercel, please go to your <strong>Vercel Project Settings &rarr; Environment Variables</strong> and add:
+        </p>
+        <div style={{ background: 'var(--bg-hover)', padding: '12px 16px', borderRadius: '8px', border: '1px solid var(--border)', display: 'inline-block', textAlign: 'left', fontFamily: 'monospace', fontSize: '0.78rem', color: 'var(--text-primary)', marginBottom: '1.5rem' }}>
+          <div>VITE_SUPABASE_URL</div>
+          <div style={{ marginBottom: '8px', color: 'var(--text-muted)' }}>https://otnxfohecczaberldjuy.supabase.co</div>
+          <div>VITE_SUPABASE_ANON_KEY</div>
+          <div style={{ color: 'var(--text-muted)' }}>your-supabase-anon-key</div>
+        </div>
+        <p style={{ color: 'var(--text-muted)', fontSize: '0.8rem' }}>After adding the variables, redeploy your project on Vercel.</p>
+      </div>
+    );
+  }
+
   if (loading && incomes.length === 0 && banks.length === 0) {
     return (
       <div className="loader-container">
