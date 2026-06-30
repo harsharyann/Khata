@@ -852,86 +852,16 @@ export default function App() {
           )}
 
           {/* ══ SAMITI ══ */}
-          {view === 'samiti' && (() => {
-            const days = new Date(month.getFullYear(), month.getMonth() + 1, 0).getDate();
-            const active = samitis.filter(s => s.year === month.getFullYear() && s.month === month.getMonth());
-            const total  = active.reduce((s, x) => s + x.dailyAmount * days, 0);
-            return (
-              <div className="fade-in-view">
-                <div className="page-header">
-                  <div className="page-header-left">
-                    <span className="eyebrow">Chit Fund Ledger</span>
-                    <h1>Samiti Tracker</h1>
-                  </div>
-                  <div className="page-header-right">
-                    <MonthSel/>
-                    <button className="btn btn-primary" onClick={() => openModal('Add Samiti', 'samiti')}>
-                      <Plus size={15}/> Add Samiti
-                    </button>
-                  </div>
-                </div>
-
-                <div className="bento-grid" style={{ marginBottom: '1.75rem' }}>
-                  <div className="cred-card bento-col-4" style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                    <div style={{ color: 'var(--text-secondary)', fontSize: '0.8rem', fontWeight: 800, letterSpacing: 1, textTransform: 'uppercase', display: 'flex', alignItems: 'center', gap: 6 }}>
-                      <span style={{fontSize: '1.2rem', animation: 'float 4s ease-in-out infinite'}}>💰</span> Monthly Commitment
-                    </div>
-                    <div style={{ fontSize: '2.2rem', fontWeight: 900, color: 'var(--purple)' }}>{fmt(total)}</div>
-                    <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Total deposits this month</div>
-                  </div>
-                  <div className="cred-card bento-col-4" style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                    <div style={{ color: 'var(--text-secondary)', fontSize: '0.8rem', fontWeight: 800, letterSpacing: 1, textTransform: 'uppercase', display: 'flex', alignItems: 'center', gap: 6 }}>
-                      <span style={{fontSize: '1.2rem', animation: 'float 3s ease-in-out infinite 0.2s'}}>👥</span> Active Samitis
-                    </div>
-                    <div style={{ fontSize: '2.2rem', fontWeight: 900, color: 'var(--text-primary)' }}>{active.length}</div>
-                    <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Currently tracking for {days} days</div>
-                  </div>
-                  <div className="cred-card bento-col-4" style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                    <div style={{ color: 'var(--text-secondary)', fontSize: '0.8rem', fontWeight: 800, letterSpacing: 1, textTransform: 'uppercase', display: 'flex', alignItems: 'center', gap: 6 }}>
-                      <span style={{fontSize: '1.2rem', animation: 'float 3.5s ease-in-out infinite 0.4s'}}>📈</span> Avg Daily Deposit
-                    </div>
-                    <div style={{ fontSize: '2.2rem', fontWeight: 900, color: 'var(--blue)' }}>
-                      {fmt(active.length > 0 ? (active.reduce((s, x) => s + x.dailyAmount, 0) / active.length) : 0)}
-                    </div>
-                    <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Average per active samiti</div>
-                  </div>
-                </div>
-
-                <div>
-                  {active.map(s => (
-                    <div key={s.id} className="khata-card" style={{ borderLeft: '6px solid var(--purple)' }}>
-                      <div style={{ flex: 1 }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 4 }}>
-                          <div className="khata-name">{s.receiverName}</div>
-                          <span className="khata-badge" style={{ background: 'rgba(124, 58, 237, 0.1)', color: 'var(--purple)' }}>Active</span>
-                        </div>
-                        <div className="khata-desc">Daily Deposit: {fmt(s.dailyAmount)}</div>
-                      </div>
-                      
-                      <div style={{ textAlign: 'right', marginRight: '1.5rem' }}>
-                        <div style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-secondary)', textTransform: 'uppercase', marginBottom: 4 }}>Monthly Total</div>
-                        <div className="khata-amount" style={{ color: 'var(--purple)' }}>{fmt(s.dailyAmount * days)}</div>
-                      </div>
-
-                      <div style={{ display: 'flex', gap: 8 }}>
-                        <button className="btn btn-ghost" style={{ height: '40px', padding: '0 16px', color: 'var(--text-primary)', border: '1px solid var(--border-strong)' }}
-                          onClick={() => openModal('Edit Samiti', 'samiti', s)}>
-                          <Edit3 size={16}/>
-                        </button>
-                        <button className="btn btn-danger" style={{ height: '40px', padding: '0 16px' }}
-                          onClick={() => { if (confirm(`Delete Samiti for ${s.receiverName}?`)) setSamitis(p => p.filter(x => x.id !== s.id)); }}>
-                          <Trash2 size={16}/>
-                        </button>
-                      </div>
-                    </div>
-                  ))}
-                  {active.length === 0 && (
-                    <div className="empty-state">No active Samitis for this month.</div>
-                  )}
-                </div>
+          {view === 'samiti' && (
+            <div className="fade-in-view" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '60vh', textAlign: 'center', gap: '1.5rem' }}>
+              <div style={{ fontSize: '4rem' }}>🚧</div>
+              <div>
+                <h1 style={{ fontSize: '2rem', fontWeight: 900, color: 'var(--text-primary)', letterSpacing: '-0.5px' }}>Coming Soon</h1>
+                <p style={{ fontSize: '1rem', color: 'var(--text-muted)', marginTop: '0.5rem', fontWeight: 500 }}>Samiti is being rebuilt from scratch.</p>
               </div>
-            );
-          })()}
+              <span style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-secondary)', background: 'var(--bg-hover)', padding: '6px 16px', borderRadius: 99, border: '1px solid var(--border)' }}>Work in progress</span>
+            </div>
+          )}
 
         </div>
       </main>
