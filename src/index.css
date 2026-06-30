@@ -1346,6 +1346,10 @@ input, select, textarea { font-family: var(--font); outline: none; }
 }
 @media (max-width: 768px) {
   .bottom-nav { display: flex; }
+  .cc-split-layout {
+    grid-template-columns: 1fr !important;
+    gap: 1.5rem !important;
+  }
 }
 @media (max-width: 640px) {
   .app-container { flex-direction: column; }

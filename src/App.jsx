@@ -88,6 +88,8 @@ export default function App() {
   const [modal,   setModal]   = useState({ open: false, title: '', type: '', item: null });
   const [quickType, setQuickType] = useState('expense');
   const [detail,  setDetail]  = useState({ open: false, item: null, type: '' });
+  const [selectedCardId, setSelectedCardId] = useState(null);
+
 
   const openModal  = (title, type, item = null) => {
     if (type === 'quick-log') setQuickType('expense');
@@ -610,170 +612,248 @@ export default function App() {
           )}
 
           {/* ══ CREDIT CARDS ══ */}
-          {view === 'credit-cards' && (
-            <div className="fade-in-view">
-              <div className="page-header">
-                <div className="page-header-left">
-                  <span className="eyebrow">Liabilities</span>
-                  <h1>Credit Cards</h1>
+          {view === 'credit-cards' && (() => {
+            const activeCardId = selectedCardId || creditCards[0]?.id;
+            const activeCard = creditCards.find(c => c.id === activeCardId) || creditCards[0];
+
+            return (
+              <div className="fade-in-view">
+                <div className="page-header">
+                  <div className="page-header-left">
+                    <span className="eyebrow">Liabilities</span>
+                    <h1>Credit Cards</h1>
+                  </div>
+                  <div className="page-header-right">
+                    <button className="btn btn-danger" onClick={() => openModal('Add Credit Card', 'card')}>
+                      <Plus size={15}/> Add Card
+                    </button>
+                  </div>
                 </div>
-                <div className="page-header-right">
-                  <button className="btn btn-danger" onClick={() => openModal('Add Credit Card', 'card')}>
-                    <Plus size={15}/> Add Card
-                  </button>
+
+                <div className="stat-grid" style={{ marginBottom: '1.75rem', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))' }}>
+                  <StatCard icon={<CreditCard size={18}/>}   color="purple" label="Total Cards"       value={String(creditCards.length)}/>
+                  <StatCard icon={<CheckCircle size={18}/>}  color="blue"   label="Total Limit"       value={fmt(ccLimit)}/>
+                  <StatCard icon={<AlertTriangle size={18}/>} color="red"   label="Total Outstanding" value={fmt(ccDebt)} valueColor="red" sub={`${ccUtil}% utilized`}/>
+                  <StatCard icon={<CheckCircle size={18}/>}  color="green"  label="Available Credit"  value={fmt(ccLimit - ccDebt)} valueColor="green"/>
                 </div>
-              </div>
 
-              <div className="stat-grid" style={{ marginBottom: '1.75rem', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))' }}>
-                <StatCard icon={<CreditCard size={18}/>}   color="purple" label="Total Cards"       value={String(creditCards.length)}/>
-                <StatCard icon={<CheckCircle size={18}/>}  color="blue"   label="Total Limit"       value={fmt(ccLimit)}/>
-                <StatCard icon={<AlertTriangle size={18}/>} color="red"   label="Total Outstanding" value={fmt(ccDebt)} valueColor="red" sub={`${ccUtil}% utilized`}/>
-                <StatCard icon={<CheckCircle size={18}/>}  color="green"  label="Available Credit"  value={fmt(ccLimit - ccDebt)} valueColor="green"/>
-              </div>
+                {creditCards.length > 0 ? (
+                  <div className="cc-split-layout" style={{ display: 'grid', gridTemplateColumns: '1fr 1.1fr', gap: '2rem', alignItems: 'start' }}>
+                    
+                    {/* Left side: Card List */}
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                      <div style={{ fontSize: '0.8rem', fontWeight: 800, color: 'var(--text-secondary)', letterSpacing: 0.5, textTransform: 'uppercase', marginBottom: -4 }}>Your Cards</div>
+                      {creditCards.map((card, idx) => {
+                        const isSelected = card.id === activeCard?.id;
+                        const util = card.limit > 0 ? ((card.outstanding / card.limit) * 100).toFixed(0) : 0;
+                        
+                        let barColor = 'var(--green)';
+                        if (util >= 30 && util <= 50) barColor = 'var(--amber)';
+                        if (util > 50) barColor = 'var(--red)';
 
-              <div className="item-grid" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))' }}>
-                {creditCards.map((card, idx) => {
-                  const util = card.limit > 0 ? ((card.outstanding / card.limit) * 100).toFixed(0) : 0;
-                  
-                  let healthLabel = "Excellent";
-                  let healthColor = "var(--green)";
-                  let healthBg = "var(--green-bg)";
-                  if (util >= 30 && util <= 50) {
-                    healthLabel = "Moderate";
-                    healthColor = "var(--amber)";
-                    healthBg = "var(--amber-bg)";
-                  } else if (util > 50) {
-                    healthLabel = "High Utilization";
-                    healthColor = "var(--red)";
-                    healthBg = "var(--red-bg)";
-                  }
-
-                  const getOrdinal = (n) => {
-                    const s = ["th", "st", "nd", "rd"],
-                          v = n % 100;
-                    return n + (s[(v - 20) % 10] || s[v] || s[0]);
-                  };
-
-                  const dueOrdinal = card.dueDate ? getOrdinal(parseInt(card.dueDate)) : "N/A";
-                  const statementOrdinal = card.statementDate ? getOrdinal(parseInt(card.statementDate)) : "N/A";
-
-                  return (
-                    <div key={card.id} className="cred-card" style={{ position: 'relative', display: 'flex', flexDirection: 'column', background: 'var(--bg-card)', border: '1px solid var(--border)', boxShadow: 'var(--shadow-md)', borderRadius: 'var(--r-lg)', padding: '1.25rem', overflow: 'hidden', gap: '1rem' }}>
-                      
-                      {/* Floating Action Buttons */}
-                      <div style={{ position: 'absolute', top: 28, right: 28, zIndex: 10, display: 'flex', gap: 6 }}>
-                        <button className="btn-icon" style={{ background: 'rgba(255,255,255,0.25)', backdropFilter: 'blur(4px)', border: '1px solid rgba(255,255,255,0.2)' }} onClick={() => openModal('Edit Credit Card', 'card', card)}>
-                          <Edit3 size={13} color="white"/>
-                        </button>
-                        <button className="btn-icon danger" style={{ background: 'rgba(239,68,68,0.25)', backdropFilter: 'blur(4px)', border: '1px solid rgba(239,68,68,0.2)' }} onClick={() => { if (confirm(`Remove ${card.bankName} - ${card.cardName}?`)) setCreditCards(p => p.filter(c => c.id !== card.id)); }}>
-                          <Trash2 size={13} color="white"/>
-                        </button>
-                      </div>
-
-                      {/* Realistic Credit Card Graphic */}
-                      <div style={{
-                        background: idx % 3 === 0 
-                          ? 'linear-gradient(135deg, #1e1b4b 0%, #312e81 60%, #4f46e5 100%)' 
-                          : idx % 3 === 1 
-                            ? 'linear-gradient(135deg, #0f172a 0%, #1e293b 60%, #334155 100%)' 
-                            : 'linear-gradient(135deg, #3b0764 0%, #1e1b4b 60%, #6366f1 100%)',
-                        borderRadius: '16px',
-                        padding: '1.25rem',
-                        color: 'white',
-                        position: 'relative',
-                        boxShadow: '0 8px 24px rgba(0,0,0,0.12)',
-                        height: '165px',
-                        display: 'flex',
-                        flexDirection: 'column',
-                        justifyContent: 'space-between',
-                        border: '1px solid rgba(255,255,255,0.08)'
-                      }}>
-                        {/* Card Gloss Layer */}
-                        <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, background: 'linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 50%)', borderRadius: '16px', pointerEvents: 'none' }}/>
-
-                        {/* Top Bank Details */}
-                        <div style={{ zIndex: 1 }}>
-                          <div style={{ fontWeight: 900, fontSize: '1.2rem', letterSpacing: '-0.3px', textTransform: 'uppercase', textShadow: '0 2px 4px rgba(0,0,0,0.2)' }}>{card.bankName}</div>
-                          <div style={{ fontSize: '0.75rem', opacity: 0.8, fontWeight: 500, letterSpacing: '0.5px' }}>{card.cardName}</div>
-                        </div>
-
-                        {/* EMV Chip & Contactless */}
-                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', zIndex: 1 }}>
-                          <div style={{ width: 36, height: 26, background: 'linear-gradient(135deg, #f59e0b 0%, #fbbf24 100%)', borderRadius: '6px', boxShadow: 'inset 0 1px 3px rgba(0,0,0,0.2)', position: 'relative' }}>
-                            <div style={{ position: 'absolute', top: 4, bottom: 4, left: 10, right: 10, borderLeft: '1px solid rgba(0,0,0,0.15)', borderRight: '1px solid rgba(0,0,0,0.15)' }}/>
-                            <div style={{ position: 'absolute', left: 4, right: 4, top: 8, bottom: 8, borderTop: '1px solid rgba(0,0,0,0.15)', borderBottom: '1px solid rgba(0,0,0,0.15)' }}/>
-                          </div>
-                          <div style={{ opacity: 0.6 }}>
-                            <ArrowRightLeft size={16} style={{ transform: 'rotate(-45deg)' }}/>
-                          </div>
-                        </div>
-
-                        {/* Card Number */}
-                        <div style={{ fontSize: '1.15rem', letterSpacing: '3px', fontFamily: 'monospace', textShadow: '0 2px 4px rgba(0,0,0,0.4)', fontWeight: 600, zIndex: 1 }}>
-                          ••••  ••••  ••••  {card.cardNumber}
-                        </div>
-                      </div>
-
-                      {/* Card Info Details */}
-                      <div>
-                        {/* Health Badge & Util Header */}
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem' }}>
-                          <span style={{ fontSize: '0.72rem', fontWeight: 800, color: 'var(--text-secondary)' }}>CARD HEALTH</span>
-                          <span style={{ fontSize: '0.7rem', fontWeight: 800, color: healthColor, background: healthBg, padding: '4px 10px', borderRadius: 99, textTransform: 'uppercase', letterSpacing: 0.5 }}>
-                            {healthLabel}
-                          </span>
-                        </div>
-
-                        {/* Utilization Bar */}
-                        <div style={{ background: 'var(--bg-hover)', borderRadius: 'var(--r-md)', padding: '12px', border: '1px solid var(--border)', marginBottom: 12 }}>
-                          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.72rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 6 }}>
-                            <span style={{ color: 'var(--text-secondary)' }}>Utilized: {util}%</span>
-                            <span style={{ color: 'var(--text-primary)' }}>Available: {fmt(card.limit - card.outstanding)}</span>
-                          </div>
-                          <div className="progress-bar-wrap" style={{ height: 6, background: 'rgba(0,0,0,0.06)', borderRadius: 99, marginBottom: 10, overflow: 'hidden' }}>
-                            <div style={{ height: '100%', background: healthColor, width: `${Math.min(util, 100)}%` }}/>
-                          </div>
-                          
-                          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem' }}>
-                            <div>
-                              <div style={{ color: 'var(--text-muted)', fontSize: '0.6rem', fontWeight: 700, letterSpacing: 0.5 }}>LIMIT</div>
-                              <div style={{ color: 'var(--text-primary)', fontWeight: 800 }}>{fmt(card.limit)}</div>
+                        return (
+                          <div 
+                            key={card.id} 
+                            onClick={() => setSelectedCardId(card.id)}
+                            style={{ 
+                              background: isSelected ? 'var(--bg-card)' : 'rgba(255, 255, 255, 0.4)',
+                              border: isSelected ? '2px solid var(--accent)' : '1px solid var(--border)',
+                              borderRadius: 'var(--r-lg)',
+                              padding: '1.25rem',
+                              cursor: 'pointer',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'space-between',
+                              boxShadow: isSelected ? 'var(--shadow-md)' : 'var(--shadow-xs)',
+                              transform: isSelected ? 'translateY(-2px)' : 'none',
+                              transition: 'all 0.2s var(--ease)',
+                              position: 'relative'
+                            }}
+                          >
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                              <div style={{ 
+                                width: 44, 
+                                height: 30, 
+                                borderRadius: '6px', 
+                                background: idx % 3 === 0 ? 'linear-gradient(135deg, #1e1b4b 0%, #4f46e5 100%)' : idx % 3 === 1 ? 'linear-gradient(135deg, #0f172a 0%, #334155 100%)' : 'linear-gradient(135deg, #3b0764 0%, #6366f1 100%)',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                color: 'white',
+                                fontSize: '0.6rem',
+                                fontWeight: 800
+                              }}>
+                                **** {card.cardNumber}
+                              </div>
+                              <div>
+                                <div style={{ fontWeight: 800, fontSize: '0.95rem', color: 'var(--text-primary)' }}>{card.bankName}</div>
+                                <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 600 }}>{card.cardName}</div>
+                              </div>
                             </div>
+
                             <div style={{ textAlign: 'right' }}>
-                              <div style={{ color: 'var(--text-muted)', fontSize: '0.6rem', fontWeight: 700, letterSpacing: 0.5 }}>OUTSTANDING</div>
-                              <div style={{ color: healthColor, fontWeight: 900 }}>{fmt(card.outstanding)}</div>
+                              <div style={{ fontWeight: 800, fontSize: '1.05rem', color: parseFloat(card.outstanding) > 0 ? 'var(--red)' : 'var(--text-primary)' }}>{fmt(card.outstanding)}</div>
+                              <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', fontWeight: 700, display: 'flex', alignItems: 'center', gap: 4, justifyContent: 'flex-end' }}>
+                                <span style={{ width: 6, height: 6, borderRadius: '50%', background: barColor }}/> {util}% Utilized
+                              </div>
                             </div>
                           </div>
-                        </div>
-
-                        {/* Statement / Due Dates */}
-                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, borderTop: '1px dashed var(--border)', paddingTop: 12, marginBottom: 12 }}>
-                          <div>
-                            <div style={{ color: 'var(--text-muted)', fontSize: '0.65rem', fontWeight: 700 }}>STATEMENT DATE</div>
-                            <div style={{ color: 'var(--text-primary)', fontSize: '0.85rem', fontWeight: 700 }}>{statementOrdinal} of month</div>
-                          </div>
-                          <div style={{ textAlign: 'right' }}>
-                            <div style={{ color: 'var(--text-muted)', fontSize: '0.65rem', fontWeight: 700 }}>DUE DATE</div>
-                            <div style={{ color: 'var(--red)', fontSize: '0.85rem', fontWeight: 800 }}>{dueOrdinal} of month</div>
-                          </div>
-                        </div>
-
-                        {/* Pay Warning Banner */}
-                        {card.dueDate && (
-                          <div style={{ background: 'var(--red-bg)', border: '1px solid rgba(244, 63, 94, 0.15)', borderRadius: 'var(--r-sm)', padding: '8px 10px', display: 'flex', alignItems: 'center', gap: 6, justifyContent: 'center' }}>
-                            <span style={{ fontSize: '0.68rem', fontWeight: 900, color: 'var(--red)', letterSpacing: 0.2, textAlign: 'center', textTransform: 'uppercase' }}>
-                              ⚠️ MUST PAY BY {dueOrdinal} AT ALL COSTS!
-                            </span>
-                          </div>
-                        )}
-                      </div>
-
+                        );
+                      })}
                     </div>
-                  );
-                })}
+
+                    {/* Right side: Detailed Glassmorphic Viewer */}
+                    {activeCard && (() => {
+                      const util = activeCard.limit > 0 ? ((activeCard.outstanding / activeCard.limit) * 100).toFixed(0) : 0;
+                      let healthLabel = "Excellent";
+                      let healthColor = "var(--green)";
+                      let healthBg = "var(--green-bg)";
+                      if (util >= 30 && util <= 50) {
+                        healthLabel = "Moderate";
+                        healthColor = "var(--amber)";
+                        healthBg = "var(--amber-bg)";
+                      } else if (util > 50) {
+                        healthLabel = "High Util";
+                        healthColor = "var(--red)";
+                        healthBg = "var(--red-bg)";
+                      }
+
+                      const getOrdinal = (n) => {
+                        const s = ["th", "st", "nd", "rd"],
+                              v = n % 100;
+                        return n + (s[(v - 20) % 10] || s[v] || s[0]);
+                      };
+
+                      const dueOrdinal = activeCard.dueDate ? getOrdinal(parseInt(activeCard.dueDate)) : "N/A";
+                      const statementOrdinal = activeCard.statementDate ? getOrdinal(parseInt(activeCard.statementDate)) : "N/A";
+
+                      return (
+                        <div className="cred-card" style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', boxShadow: 'var(--shadow-lg)', borderRadius: 'var(--r-xl)', padding: '1.75rem', display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+                          
+                          {/* Card Preview Graphic */}
+                          <div style={{
+                            background: 'linear-gradient(135deg, #0F172A 0%, #1E293B 50%, #0F172A 100%)',
+                            borderRadius: '16px',
+                            padding: '1.5rem',
+                            color: 'white',
+                            position: 'relative',
+                            boxShadow: '0 12px 36px rgba(15,23,42,0.25)',
+                            height: '180px',
+                            display: 'flex',
+                            flexDirection: 'column',
+                            justifyContent: 'space-between',
+                            border: '1px solid rgba(255,255,255,0.08)',
+                            overflow: 'hidden'
+                          }}>
+                            {/* Reflective shine */}
+                            <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(135deg, rgba(255,255,255,0.12) 0%, rgba(255,255,255,0) 60%)', pointerEvents: 'none' }}/>
+                            
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', zIndex: 1 }}>
+                              <div>
+                                <div style={{ fontSize: '1.25rem', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '-0.5px' }}>{activeCard.bankName}</div>
+                                <div style={{ fontSize: '0.75rem', opacity: 0.7, fontWeight: 600 }}>{activeCard.cardName}</div>
+                              </div>
+                              <div style={{ width: 44, height: 32, background: 'linear-gradient(135deg, #f59e0b 0%, #fbbf24 100%)', borderRadius: '6px', boxShadow: 'inset 0 1px 2px rgba(0,0,0,0.3)', position: 'relative' }}>
+                                <div style={{ position: 'absolute', top: 4, bottom: 4, left: 12, right: 12, borderLeft: '1px solid rgba(0,0,0,0.15)', borderRight: '1px solid rgba(0,0,0,0.15)' }}/>
+                                <div style={{ position: 'absolute', left: 4, right: 4, top: 10, bottom: 10, borderTop: '1px solid rgba(0,0,0,0.15)', borderBottom: '1px solid rgba(0,0,0,0.15)' }}/>
+                              </div>
+                            </div>
+
+                            <div style={{ fontSize: '1.2rem', letterSpacing: '4px', fontFamily: 'monospace', textShadow: '0 2px 4px rgba(0,0,0,0.5)', fontWeight: 600, zIndex: 1 }}>
+                              ••••  ••••  ••••  {activeCard.cardNumber}
+                            </div>
+
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', zIndex: 1 }}>
+                              <div>
+                                <div style={{ fontSize: '0.6rem', opacity: 0.6, textTransform: 'uppercase', letterSpacing: 0.5 }}>Card Member</div>
+                                <div style={{ fontSize: '0.8rem', fontWeight: 700, letterSpacing: 0.2 }}>Active User</div>
+                              </div>
+                              <div style={{ fontSize: '0.75rem', fontWeight: 900, opacity: 0.9, fontStyle: 'italic' }}>VISA</div>
+                            </div>
+                          </div>
+
+                          {/* Quick Stats Grid */}
+                          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                            <div style={{ background: 'var(--bg-base)', border: '1px solid var(--border)', borderRadius: 'var(--r-md)', padding: '12px 16px' }}>
+                              <span style={{ fontSize: '0.65rem', fontWeight: 800, color: 'var(--text-secondary)', textTransform: 'uppercase', display: 'block', marginBottom: 4 }}>Outstanding</span>
+                              <span style={{ fontSize: '1.35rem', fontWeight: 900, color: parseFloat(activeCard.outstanding) > 0 ? 'var(--red)' : 'var(--text-primary)' }}>{fmt(activeCard.outstanding)}</span>
+                            </div>
+                            <div style={{ background: 'var(--bg-base)', border: '1px solid var(--border)', borderRadius: 'var(--r-md)', padding: '12px 16px' }}>
+                              <span style={{ fontSize: '0.65rem', fontWeight: 800, color: 'var(--text-secondary)', textTransform: 'uppercase', display: 'block', marginBottom: 4 }}>Available Limit</span>
+                              <span style={{ fontSize: '1.35rem', fontWeight: 900, color: 'var(--green)' }}>{fmt(activeCard.limit - activeCard.outstanding)}</span>
+                            </div>
+                          </div>
+
+                          {/* Utilization & Progress */}
+                          <div>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.75rem', fontWeight: 700, marginBottom: 8 }}>
+                              <span style={{ color: 'var(--text-secondary)' }}>Limit Utilization: {util}%</span>
+                              <span style={{ fontSize: '0.7rem', fontWeight: 800, color: healthColor, background: healthBg, padding: '3px 8px', borderRadius: 99, textTransform: 'uppercase' }}>{healthLabel}</span>
+                            </div>
+                            <div className="progress-bar-wrap" style={{ height: 8, background: 'rgba(0,0,0,0.06)', borderRadius: 99, marginBottom: 12 }}>
+                              <div style={{ height: '100%', background: healthColor, width: `${Math.min(util, 100)}%`, borderRadius: 99 }}/>
+                            </div>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 600 }}>
+                              <span>Total Credit Limit: {fmt(activeCard.limit)}</span>
+                            </div>
+                          </div>
+
+                          {/* Due & Statement Details */}
+                          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', borderTop: '1px solid var(--border)', paddingTop: '1.25rem' }}>
+                            <div>
+                              <span style={{ fontSize: '0.65rem', fontWeight: 800, color: 'var(--text-muted)', textTransform: 'uppercase', display: 'block', marginBottom: 2 }}>Statement Date</span>
+                              <span style={{ fontSize: '0.9rem', fontWeight: 800, color: 'var(--text-primary)' }}>{statementOrdinal} of month</span>
+                            </div>
+                            <div>
+                              <span style={{ fontSize: '0.65rem', fontWeight: 800, color: 'var(--text-muted)', textTransform: 'uppercase', display: 'block', marginBottom: 2 }}>Due Date</span>
+                              <span style={{ fontSize: '0.9rem', fontWeight: 900, color: 'var(--red)' }}>{dueOrdinal} of month</span>
+                            </div>
+                          </div>
+
+                          {/* Payoff Inline Option */}
+                          {parseFloat(activeCard.outstanding) > 0 && (
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 12, background: 'rgba(239, 68, 68, 0.04)', border: '1px solid rgba(239, 68, 68, 0.15)', borderRadius: 'var(--r-md)', padding: '12px 16px' }}>
+                              <div style={{ flex: 1 }}>
+                                <div style={{ fontSize: '0.85rem', fontWeight: 800, color: 'var(--red)' }}>Outstanding Balance</div>
+                                <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', fontWeight: 500 }}>Make payments to free up limit</div>
+                              </div>
+                              <button 
+                                className="btn btn-danger"
+                                style={{ height: '36px', padding: '0 16px', fontSize: '0.8rem', fontWeight: 700 }}
+                                onClick={() => {
+                                  const amt = prompt(`Enter repayment amount (Outstanding: ${fmt(activeCard.outstanding)}):`);
+                                  if (amt && parseFloat(amt) > 0) {
+                                    setCreditCards(p => p.map(c => c.id === activeCard.id ? { ...c, outstanding: Math.max(0, c.outstanding - parseFloat(amt)) } : c));
+                                  }
+                                }}
+                              >
+                                Record Pay
+                              </button>
+                            </div>
+                          )}
+
+                          {/* Quick Actions (Edit / Delete) */}
+                          <div style={{ display: 'flex', gap: '0.75rem', borderTop: '1px solid var(--border)', paddingTop: '1.25rem' }}>
+                            <button className="btn btn-ghost" style={{ flex: 1, justifyContent: 'center' }} onClick={() => openModal('Edit Credit Card', 'card', activeCard)}>
+                              <Edit3 size={15}/> Edit Details
+                            </button>
+                            <button className="btn" style={{ flex: 1, justifyContent: 'center', color: 'var(--red)', background: 'var(--red-bg)', border: '1px solid transparent' }} onClick={() => { if (confirm(`Remove ${activeCard.bankName} CC?`)) setCreditCards(p => p.filter(c => c.id !== activeCard.id)); }}>
+                              <Trash2 size={15}/> Remove Card
+                            </button>
+                          </div>
+
+                        </div>
+                      );
+                    })()}
+
+                  </div>
+                ) : (
+                  <div className="empty-state">No credit cards added.</div>
+                )}
               </div>
-            </div>
-          )}
+            );
+          })()}
+
 
           {/* ══ BORROWERS ══ */}
           {view === 'borrowers' && (
