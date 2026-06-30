@@ -1371,5 +1371,9 @@ input, select, textarea { font-family: var(--font); outline: none; }
   .item-grid { grid-template-columns: 1fr; }
   .khata-card { gap: 8px; }
   .khata-card .khata-amount { font-size: 1.2rem; }
+  /* Stacks yearly summary grid boxes on mobile */
+  div[style*="grid-template-columns: repeat(3, 1fr)"] {
+    grid-template-columns: 1fr !important;
+  }
 }
 

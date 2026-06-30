@@ -536,6 +536,46 @@ export default function App() {
                   </table>
                 </div>
               </div>
+
+              {/* ══ YEARLY SUMMARY OVERVIEW ══ */}
+              <div className="panel" style={{ marginTop: '2rem', padding: '1.5rem' }}>
+                <div className="panel-header" style={{ background: 'transparent', borderBottom: '1px solid rgba(0,0,0,0.05)', padding: '0 0 1rem 0', marginBottom: '1.5rem' }}>
+                  <CalendarCheck size={18} style={{ color: 'var(--blue)' }}/>
+                  <h3 style={{ fontSize: '1.1rem', fontWeight: 800 }}>Yearly Cashflow Overview ({month.getFullYear()})</h3>
+                </div>
+
+                {/* Yearly Stats Grid */}
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1rem', marginBottom: '1.5rem' }}>
+                  <div style={{ background: 'var(--bg-base)', border: '1px solid var(--border)', borderRadius: 'var(--r-md)', padding: '12px 16px' }}>
+                    <span style={{ fontSize: '0.65rem', fontWeight: 800, color: 'var(--text-muted)', textTransform: 'uppercase', display: 'block', marginBottom: 2 }}>Yearly Income</span>
+                    <span style={{ fontSize: '1.35rem', fontWeight: 900, color: 'var(--green)' }}>{fmt(totYearInc)}</span>
+                  </div>
+                  <div style={{ background: 'var(--bg-base)', border: '1px solid var(--border)', borderRadius: 'var(--r-md)', padding: '12px 16px' }}>
+                    <span style={{ fontSize: '0.65rem', fontWeight: 800, color: 'var(--text-muted)', textTransform: 'uppercase', display: 'block', marginBottom: 2 }}>Yearly Expenses</span>
+                    <span style={{ fontSize: '1.35rem', fontWeight: 900, color: 'var(--red)' }}>{fmt(totYearExp)}</span>
+                  </div>
+                  <div style={{ background: 'var(--bg-base)', border: '1px solid var(--border)', borderRadius: 'var(--r-md)', padding: '12px 16px' }}>
+                    <span style={{ fontSize: '0.65rem', fontWeight: 800, color: 'var(--text-muted)', textTransform: 'uppercase', display: 'block', marginBottom: 2 }}>Net Savings</span>
+                    <span style={{ fontSize: '1.35rem', fontWeight: 900, color: (totYearInc - totYearExp) >= 0 ? 'var(--blue)' : 'var(--red)' }}>{fmt(totYearInc - totYearExp)}</span>
+                  </div>
+                </div>
+
+                {/* Yearly Chart Visualization */}
+                <div style={{ height: '220px', position: 'relative' }}>
+                  <Bar data={yearlyBarData} options={{
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                      legend: { display: false }
+                    },
+                    scales: {
+                      x: { grid: { display: false } },
+                      y: { grid: { color: 'rgba(0,0,0,0.03)' } }
+                    }
+                  }}/>
+                </div>
+              </div>
+
             </div>
           )}
 
