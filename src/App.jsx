@@ -458,7 +458,7 @@ export default function App() {
                     <span style={{fontSize: '1.2rem', animation: 'float 2.5s ease-in-out infinite 0.6s'}}>💳</span> Credit Debt
                   </div>
                   <div style={{ fontSize: '2.2rem', fontWeight: 900, color: 'var(--red)' }}>{fmt(ccDebt)}</div>
-                  <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Outstanding Balance</div>
+                  <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Used out of {fmt(ccLimit)} Limit</div>
                 </div>
               </div>
 
@@ -562,8 +562,9 @@ export default function App() {
                               <div key={cc.id} style={{ padding: '12px', background: 'var(--red-bg)', border: '1px solid rgba(239, 68, 68, 0.2)', borderRadius: 'var(--r-md)', display: 'flex', flexDirection: 'column', gap: 4 }}>
                                 <div style={{ fontWeight: 700, fontSize: '0.9rem', color: 'var(--red)' }}>{cc.bankName} CC</div>
                                 <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>Limit: {fmt(cc.limit)}</div>
-                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginTop: 4 }}>
-                                  <div style={{ fontWeight: 800, fontSize: '1.1rem', color: 'var(--red)' }}>-{fmt(cc.outstanding)}</div>
+                                <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>Used: {fmt(cc.outstanding)}</div>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginTop: 2 }}>
+                                  <div style={{ fontWeight: 850, fontSize: '1rem', color: 'var(--red)' }}>Avail: {fmt(cc.limit - cc.outstanding)}</div>
                                 </div>
                               </div>
                             ))}
