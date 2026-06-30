@@ -13,6 +13,7 @@ import {
   Title, Tooltip, Legend,
 } from 'chart.js';
 import { Bar, Line, Doughnut } from 'react-chartjs-2';
+import { supabase } from './supabaseClient';
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, LineElement, PointElement, ArcElement, Title, Tooltip, Legend);
 
@@ -67,22 +68,119 @@ export default function App() {
   const [banksCollapsed, setBanksCollapsed] = useState(false);
   const [cardsCollapsed, setCardsCollapsed] = useState(false);
 
-  const [incomes,     setIncomes]     = useState(() => JSON.parse(localStorage.getItem('fi_inc_v2')  || 'null') ?? DUMMY_INCOMES);
-  const [expenses,    setExpenses]    = useState(() => JSON.parse(localStorage.getItem('fi_exp_v2')  || 'null') ?? DUMMY_EXPENSES);
-  const [banks,       setBanks]       = useState(() => JSON.parse(localStorage.getItem('fi_bnk_v2')  || 'null') ?? DUMMY_BANKS);
-  const [cash,        setCash]        = useState(() => parseFloat(localStorage.getItem('fi_csh_v2')  ?? DEFAULT_CASH));
-  const [creditCards, setCreditCards] = useState(() => JSON.parse(localStorage.getItem('fi_crd_v2')  || 'null') ?? DUMMY_CARDS);
-  const [borrowers,   setBorrowers]   = useState(() => JSON.parse(localStorage.getItem('fi_brw_v2')  || 'null') ?? DUMMY_BORROWERS);
+  // Supabase Auth and Loader state
+  const [session, setSession] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [authEmail, setAuthEmail] = useState('');
+  const [authPassword, setAuthPassword] = useState('');
+  const [isSignUp, setIsSignUp] = useState(false);
+  const [authError, setAuthError] = useState('');
 
+  const [incomes,     setIncomes]     = useState([]);
+  const [expenses,    setExpenses]    = useState([]);
+  const [banks,       setBanks]       = useState([]);
+  const [cash,        setCash]        = useState(DEFAULT_CASH);
+  const [creditCards, setCreditCards] = useState([]);
+  const [borrowers,   setBorrowers]   = useState([]);
 
-  // Persist
-  useEffect(() => { localStorage.setItem('fi_inc_v2', JSON.stringify(incomes)); },     [incomes]);
-  useEffect(() => { localStorage.setItem('fi_exp_v2', JSON.stringify(expenses)); },    [expenses]);
-  useEffect(() => { localStorage.setItem('fi_bnk_v2', JSON.stringify(banks)); },       [banks]);
-  useEffect(() => { localStorage.setItem('fi_csh_v2', cash.toString()); },             [cash]);
-  useEffect(() => { localStorage.setItem('fi_crd_v2', JSON.stringify(creditCards)); }, [creditCards]);
-  useEffect(() => { localStorage.setItem('fi_brw_v2', JSON.stringify(borrowers)); },   [borrowers]);
+  // Auth Lifecycle Hook
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
+      setLoading(false);
+    });
 
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setSession(session);
+      setLoading(false);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  // Fetch data hook
+  useEffect(() => {
+    if (!session) {
+      setIncomes([]);
+      setExpenses([]);
+      setBanks([]);
+      setCash(DEFAULT_CASH);
+      setCreditCards([]);
+      setBorrowers([]);
+      return;
+    }
+
+    const fetchData = async () => {
+      setLoading(true);
+      try {
+        // Fetch profiles (for cash)
+        const { data: profileData } = await supabase
+          .from('profiles')
+          .select('cash')
+          .single();
+        if (profileData) {
+          setCash(Number(profileData.cash));
+        } else {
+          // If no profile yet, insert one
+          await supabase.from('profiles').insert([{ id: session.user.id, cash: DEFAULT_CASH }]);
+          setCash(DEFAULT_CASH);
+        }
+
+        // Fetch incomes
+        const { data: incData } = await supabase.from('incomes').select('*').order('date', { ascending: false });
+        if (incData) setIncomes(incData);
+
+        // Fetch expenses
+        const { data: expData } = await supabase.from('expenses').select('*').order('date', { ascending: false });
+        if (expData) setExpenses(expData);
+
+        // Fetch banks
+        const { data: bankData } = await supabase.from('banks').select('*');
+        if (bankData) setBanks(bankData);
+
+        // Fetch credit cards
+        const { data: cardData } = await supabase.from('credit_cards').select('*');
+        if (cardData) setCreditCards(cardData);
+
+        // Fetch borrowers
+        const { data: borrowerData } = await supabase.from('borrowers').select('*');
+        if (borrowerData) setBorrowers(borrowerData);
+
+      } catch (err) {
+        console.error('Error fetching Supabase data:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, [session]);
+
+  const handleAuth = async (e) => {
+    e.preventDefault();
+    setAuthError('');
+    setLoading(true);
+    try {
+      if (isSignUp) {
+        const { error } = await supabase.auth.signUp({
+          email: authEmail,
+          password: authPassword,
+        });
+        if (error) throw error;
+        alert('Verification email sent or signed up successfully!');
+      } else {
+        const { error } = await supabase.auth.signInWithPassword({
+          email: authEmail,
+          password: authPassword,
+        });
+        if (error) throw error;
+      }
+    } catch (err) {
+      setAuthError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   // Modal state
   const [modal,   setModal]   = useState({ open: false, title: '', type: '', item: null });
@@ -91,8 +189,6 @@ export default function App() {
   const [selectedCardId, setSelectedCardId] = useState(null);
   const [payoffAmount, setPayoffAmount] = useState('');
 
-
-
   const openModal  = (title, type, item = null) => {
     if (type === 'quick-log') setQuickType('expense');
     setModal({ open: true, title, type, item });
@@ -100,6 +196,249 @@ export default function App() {
   const closeModal = () => setModal({ open: false, title: '', type: '', item: null });
   const openDetail = (item, type) => setDetail({ open: true, item, type });
   const closeDetail = () => setDetail({ open: false, item: null, type: '' });
+
+  // Database helper wrappers
+  const saveQuickLog = async (date, amount, type, category) => {
+    setLoading(true);
+    const table = type === 'income' ? 'incomes' : 'expenses';
+    const { data, error } = await supabase
+      .from(table)
+      .insert([{ date, amount, category, user_id: session.user.id }])
+      .select();
+    if (error) {
+      alert('Error saving transaction: ' + error.message);
+    } else if (data) {
+      const setter = type === 'income' ? setIncomes : setExpenses;
+      setter(p => [data[0], ...p]);
+    }
+    setLoading(false);
+  };
+
+  const saveIncomeExpense = async (id, date, amount, category, type) => {
+    setLoading(true);
+    const table = type === 'income' ? 'incomes' : 'expenses';
+    const setter = type === 'income' ? setIncomes : setExpenses;
+
+    if (id) {
+      const { data, error } = await supabase
+        .from(table)
+        .update({ date, amount, category })
+        .eq('id', id)
+        .select();
+      if (error) {
+        alert('Error updating record: ' + error.message);
+      } else if (data) {
+        setter(p => p.map(x => x.id === id ? data[0] : x));
+      }
+    } else {
+      const { data, error } = await supabase
+        .from(table)
+        .insert([{ date, amount, category, user_id: session.user.id }])
+        .select();
+      if (error) {
+        alert('Error inserting record: ' + error.message);
+      } else if (data) {
+        setter(p => [data[0], ...p]);
+      }
+    }
+    setLoading(false);
+  };
+
+  const deleteIncomeExpense = async (id, type) => {
+    setLoading(true);
+    const table = type === 'income' ? 'incomes' : 'expenses';
+    const setter = type === 'income' ? setIncomes : setExpenses;
+
+    const { error } = await supabase.from(table).delete().eq('id', id);
+    if (error) {
+      alert('Error deleting: ' + error.message);
+    } else {
+      setter(p => p.filter(x => x.id !== id));
+    }
+    setLoading(false);
+  };
+
+  const saveBank = async (id, bankName, type, accountNumber, balance) => {
+    setLoading(true);
+    if (id) {
+      const { data, error } = await supabase
+        .from('banks')
+        .update({ bankName, type, accountNumber, balance })
+        .eq('id', id)
+        .select();
+      if (error) {
+        alert('Error updating bank: ' + error.message);
+      } else if (data) {
+        setBanks(p => p.map(x => x.id === id ? data[0] : x));
+      }
+    } else {
+      const { data, error } = await supabase
+        .from('banks')
+        .insert([{ bankName, type, accountNumber, balance, user_id: session.user.id }])
+        .select();
+      if (error) {
+        alert('Error adding bank: ' + error.message);
+      } else if (data) {
+        setBanks(p => [...p, data[0]]);
+      }
+    }
+    setLoading(false);
+  };
+
+  const deleteBank = async (id) => {
+    setLoading(true);
+    const { error } = await supabase.from('banks').delete().eq('id', id);
+    if (error) {
+      alert('Error deleting bank: ' + error.message);
+    } else {
+      setBanks(p => p.filter(x => x.id !== id));
+    }
+    setLoading(false);
+  };
+
+  const updateCash = async (amount) => {
+    setLoading(true);
+    const { data, error } = await supabase
+      .from('profiles')
+      .update({ cash: amount })
+      .eq('id', session.user.id)
+      .select();
+    if (error) {
+      alert('Error updating cash: ' + error.message);
+    } else {
+      setCash(amount);
+    }
+    setLoading(false);
+  };
+
+  const saveCreditCard = async (id, bankName, cardName, cardNumber, limit, outstanding, statementDate, dueDate) => {
+    setLoading(true);
+    if (id) {
+      const { data, error } = await supabase
+        .from('credit_cards')
+        .update({ bankName, cardName, cardNumber, limit, outstanding, statementDate, dueDate })
+        .eq('id', id)
+        .select();
+      if (error) {
+        alert('Error updating card: ' + error.message);
+      } else if (data) {
+        setCreditCards(p => p.map(x => x.id === id ? data[0] : x));
+      }
+    } else {
+      const { data, error } = await supabase
+        .from('credit_cards')
+        .insert([{ bankName, cardName, cardNumber, limit, outstanding, statementDate, dueDate, user_id: session.user.id }])
+        .select();
+      if (error) {
+        alert('Error adding card: ' + error.message);
+      } else if (data) {
+        setCreditCards(p => [...p, data[0]]);
+      }
+    }
+    setLoading(false);
+  };
+
+  const deleteCreditCard = async (id) => {
+    setLoading(true);
+    const { error } = await supabase.from('credit_cards').delete().eq('id', id);
+    if (error) {
+      alert('Error deleting card: ' + error.message);
+    } else {
+      setCreditCards(p => p.filter(x => x.id !== id));
+    }
+    setLoading(false);
+  };
+
+  const payCreditCard = async (id, amount) => {
+    setLoading(true);
+    const card = creditCards.find(c => c.id === id);
+    if (!card) return;
+    const newOutstanding = Math.max(0, card.outstanding - amount);
+    const { data, error } = await supabase
+      .from('credit_cards')
+      .update({ outstanding: newOutstanding })
+      .eq('id', id)
+      .select();
+    if (error) {
+      alert('Error paying card: ' + error.message);
+    } else if (data) {
+      setCreditCards(p => p.map(x => x.id === id ? data[0] : x));
+    }
+    setLoading(false);
+  };
+
+  const saveBorrower = async (id, name, principal, date) => {
+    setLoading(true);
+    if (id) {
+      const { data, error } = await supabase
+        .from('borrowers')
+        .update({ name, principal, date })
+        .eq('id', id)
+        .select();
+      if (error) {
+        alert('Error updating borrower: ' + error.message);
+      } else if (data) {
+        setBorrowers(p => p.map(x => x.id === id ? data[0] : x));
+      }
+    } else {
+      const { data, error } = await supabase
+        .from('borrowers')
+        .insert([{ name, principal, repaid: 0, date, user_id: session.user.id }])
+        .select();
+      if (error) {
+        alert('Error adding borrower: ' + error.message);
+      } else if (data) {
+        setBorrowers(p => [...p, data[0]]);
+      }
+    }
+    setLoading(false);
+  };
+
+  const deleteBorrower = async (id) => {
+    setLoading(true);
+    const { error } = await supabase.from('borrowers').delete().eq('id', id);
+    if (error) {
+      alert('Error deleting borrower: ' + error.message);
+    } else {
+      setBorrowers(p => p.filter(x => x.id !== id));
+    }
+    setLoading(false);
+  };
+
+  const receiveRepayment = async (id, amount) => {
+    setLoading(true);
+    const b = borrowers.find(x => x.id === id);
+    if (!b) return;
+    const newRepaid = b.repaid + amount;
+    const { data, error } = await supabase
+      .from('borrowers')
+      .update({ repaid: newRepaid })
+      .eq('id', id)
+      .select();
+    if (error) {
+      alert('Error recording repayment: ' + error.message);
+    } else if (data) {
+      setBorrowers(p => p.map(x => x.id === id ? data[0] : x));
+    }
+    setLoading(false);
+  };
+
+  const settleBorrower = async (id) => {
+    setLoading(true);
+    const b = borrowers.find(x => x.id === id);
+    if (!b) return;
+    const { data, error } = await supabase
+      .from('borrowers')
+      .update({ repaid: b.principal })
+      .eq('id', id)
+      .select();
+    if (error) {
+      alert('Error settling record: ' + error.message);
+    } else if (data) {
+      setBorrowers(p => p.map(x => x.id === id ? data[0] : x));
+    }
+    setLoading(false);
+  };
 
   // Month helpers
   const changeMonth = (d) => { const n = new Date(month); n.setMonth(n.getMonth() + d); setMonth(n); };
@@ -239,8 +578,8 @@ export default function App() {
 
 
   // ─── Income/Expense delete helpers ───────────────
-  const deleteIncome  = (id) => { if (confirm('Delete this income record?'))  setIncomes (p => p.filter(x => x.id !== id)); };
-  const deleteExpense = (id) => { if (confirm('Delete this expense record?')) setExpenses(p => p.filter(x => x.id !== id)); };
+  const deleteIncome  = (id) => { if (confirm('Delete this income record?'))  deleteIncomeExpense(id, 'income'); };
+  const deleteExpense = (id) => { if (confirm('Delete this expense record?')) deleteIncomeExpense(id, 'expenses'); };
 
   // ─── MonthSelector sub-component ─────────────────
   const MonthSel = () => (
@@ -266,27 +605,99 @@ export default function App() {
   // ─────────────────────────────────────────────────
   //   RENDER
   // ─────────────────────────────────────────────────
+  if (loading && incomes.length === 0 && banks.length === 0) {
+    return (
+      <div className="loader-container">
+        <div className="pulsing-orb">
+          <IndianRupee size={36} />
+        </div>
+        <span className="loader-text">Syncing with Supabase...</span>
+      </div>
+    );
+  }
+
+  if (!session) {
+    return (
+      <div className="auth-container">
+        <div className="auth-card">
+          <div className="auth-header">
+            <h2>Finance Buddy</h2>
+            <p>{isSignUp ? 'Create your cloud account' : 'Sign in to sync your data'}</p>
+          </div>
+          <form className="auth-form" onSubmit={handleAuth}>
+            <div className="form-group full">
+              <label>Email Address</label>
+              <input 
+                type="email" 
+                required 
+                placeholder="your@email.com" 
+                value={authEmail} 
+                onChange={e => setAuthEmail(e.target.value)} 
+                className="cred-input"
+                style={{ background: 'rgba(255,255,255,0.05)', color: '#fff', border: '1px solid rgba(255,255,255,0.1)' }}
+              />
+            </div>
+            <div className="form-group full">
+              <label>Password</label>
+              <input 
+                type="password" 
+                required 
+                placeholder="••••••••" 
+                value={authPassword} 
+                onChange={e => setAuthPassword(e.target.value)} 
+                className="cred-input"
+                style={{ background: 'rgba(255,255,255,0.05)', color: '#fff', border: '1px solid rgba(255,255,255,0.1)' }}
+              />
+            </div>
+            {authError && <div style={{ color: 'var(--red)', fontSize: '0.8rem', fontWeight: 700 }}>{authError}</div>}
+            <button type="submit" className="btn btn-primary" style={{ width: '100%', height: 42, justifyContent: 'center', fontWeight: 800 }}>
+              {isSignUp ? 'Sign Up' : 'Sign In'}
+            </button>
+          </form>
+          <div className="auth-toggle" onClick={() => setIsSignUp(!isSignUp)}>
+            {isSignUp ? 'Already have an account? ' : "Don't have an account? "}
+            <strong>{isSignUp ? 'Sign In' : 'Sign Up'}</strong>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="app-container">
 
       {/* ═══ TOP NAVBAR ═══ */}
-      <header className="top-navbar">
-        <div className="brand">
-          <span style={{ fontWeight: 900, letterSpacing: '-0.5px' }}>Finance Buddy</span>
+      <header className="top-navbar" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+          <div className="brand">
+            <span style={{ fontWeight: 900, letterSpacing: '-0.5px' }}>Finance Buddy</span>
+          </div>
+          <span style={{ fontSize: '0.72rem', background: 'var(--accent-soft)', color: 'var(--accent)', padding: '4px 10px', borderRadius: '99px', fontWeight: 750 }}>
+            ☁️ Cloud Synced
+          </span>
         </div>
 
-        <nav className="nav-menu">
-          {navItems.map(it => (
-            <button
-              key={it.id}
-              className={`nav-item ${view === it.id ? 'active' : ''}`}
-              onClick={() => setView(it.id)}
-            >
-              {it.icon}
-              <span>{it.label}</span>
-            </button>
-          ))}
-        </nav>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '1.25rem' }}>
+          <nav className="nav-menu">
+            {navItems.map(it => (
+              <button
+                key={it.id}
+                className={`nav-item ${view === it.id ? 'active' : ''}`}
+                onClick={() => setView(it.id)}
+              >
+                {it.icon}
+                <span>{it.label}</span>
+              </button>
+            ))}
+          </nav>
+          <button 
+            className="btn" 
+            style={{ background: 'var(--red-bg)', color: 'var(--red)', height: '36px', padding: '0 12px', fontSize: '0.78rem', fontWeight: 800, border: '1px solid transparent', borderRadius: '6px' }}
+            onClick={() => supabase.auth.signOut()}
+          >
+            Logout
+          </button>
+        </div>
 
       </header>
 
@@ -300,7 +711,7 @@ export default function App() {
               <div className="page-header">
                 <div className="page-header-left">
                   <span className="eyebrow">{new Date().toLocaleDateString('en-US', { weekday: 'long', day: 'numeric', month: 'short', year: 'numeric' })}</span>
-                  <h1>Welcome, Shailesh</h1>
+                  <h1>Welcome, {session.user.email.split('@')[0]}</h1>
                 </div>
                 <div className="page-header-right">
                   <MonthSel/>
@@ -341,10 +752,10 @@ export default function App() {
                   if (!date || (inc === 0 && exp === 0)) { alert('Enter a date and at least one amount.'); return; }
                   
                   if (inc > 0) {
-                    setIncomes(p => [{ id: Date.now(), date, amount: inc, category: 'Others' }, ...p]);
+                    saveIncomeExpense(null, date, inc, 'Others', 'income');
                   }
                   if (exp > 0) {
-                    setExpenses(p => [{ id: Date.now() + 1, date, amount: exp, category: 'Others' }, ...p]);
+                    saveIncomeExpense(null, date, exp, 'Others', 'expenses');
                   }
                   f.reset();
                   f.date.value = new Date().toISOString().split('T')[0];
@@ -766,7 +1177,7 @@ export default function App() {
                     </div>
                     
                     <form 
-                      onSubmit={e => { e.preventDefault(); const v = e.target.c.value; if (v) { setCash(parseFloat(v)); e.target.reset(); }}} 
+                      onSubmit={e => { e.preventDefault(); const v = e.target.c.value; if (v) { updateCash(parseFloat(v)); e.target.reset(); }}} 
                       style={{ display: 'flex', gap: 8, borderTop: '1px solid var(--border)', paddingTop: '1rem' }}
                     >
                       <div style={{ position: 'relative', flex: 1 }}>
@@ -832,7 +1243,7 @@ export default function App() {
                           <Edit3 size={13}/> Edit Account
                         </button>
                         <button 
-                          onClick={() => { if (confirm(`Remove ${acc.bankName} account?`)) setBanks(p => p.filter(b => b.id !== acc.id)); }}
+                          onClick={() => { if (confirm(`Remove ${acc.bankName} account?`)) deleteBank(acc.id); }}
                           style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: '0.78rem', fontWeight: 800, color: 'var(--red)', cursor: 'pointer' }}
                         >
                           <Trash2 size={13}/> Delete
@@ -971,7 +1382,7 @@ export default function App() {
                                   const input = document.getElementById(`pay-input-${card.id}`);
                                   const val = parseFloat(input?.value);
                                   if (val > 0) {
-                                    setCreditCards(p => p.map(c => c.id === card.id ? { ...c, outstanding: Math.max(0, c.outstanding - val) } : c));
+                                    payCreditCard(card.id, val);
                                     if (input) input.value = '';
                                   } else {
                                     alert('Enter payment amount.');
@@ -992,7 +1403,7 @@ export default function App() {
                               <Edit3 size={13}/> Edit Card
                             </button>
                             <button 
-                              onClick={() => { if (confirm(`Remove ${card.bankName} CC?`)) setCreditCards(p => p.filter(c => c.id !== card.id)); }}
+                              onClick={() => { if (confirm(`Remove ${card.bankName} CC?`)) deleteCreditCard(card.id); }}
                               style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: '0.78rem', fontWeight: 800, color: 'var(--red)', cursor: 'pointer' }}
                             >
                               <Trash2 size={13}/> Delete
@@ -1063,18 +1474,18 @@ export default function App() {
                             <button className="btn btn-primary" style={{ height: '40px', padding: '0 20px', fontWeight: 700 }}
                               onClick={() => {
                                 const a = prompt(`Enter repayment amount (Remaining: ${fmt(rem)}):`);
-                                if (a && parseFloat(a) > 0) setBorrowers(p => p.map(b => b.id === bw.id ? { ...b, repaid: b.repaid + parseFloat(a) } : b));
+                                if (a && parseFloat(a) > 0) receiveRepayment(bw.id, parseFloat(a));
                               }}>
                               Receive
                             </button>
                             <button className="btn btn-ghost" style={{ height: '40px', padding: '0 16px', color: 'var(--text-primary)', border: '1px solid var(--border-strong)', fontWeight: 600 }}
-                              onClick={() => { if (confirm(`Settle full ₹${rem} for ${bw.name}?`)) setBorrowers(p => p.map(b => b.id === bw.id ? { ...b, repaid: b.principal } : b)); }}>
+                              onClick={() => { if (confirm(`Settle full ₹${rem} for ${bw.name}?`)) settleBorrower(bw.id); }}>
                               Settle All
                             </button>
                           </>
                         ) : (
                           <button className="btn btn-danger" style={{ height: '40px', padding: '0 16px' }}
-                            onClick={() => { if (confirm(`Delete borrower record for ${bw.name}?`)) setBorrowers(p => p.filter(b => b.id !== bw.id)); }}>
+                            onClick={() => { if (confirm(`Delete borrower record for ${bw.name}?`)) deleteBorrower(bw.id); }}>
                             <Trash2 size={16}/>
                           </button>
                         )}
@@ -1119,11 +1530,7 @@ export default function App() {
                   const f = e.target;
                   const date = f.date.value, amount = parseFloat(f.amount.value) || 0, type = f.type.value, category = f.category.value;
                   if (!date || amount <= 0) { alert('Enter a date and amount.'); return; }
-                  if (type === 'income') {
-                    setIncomes(p => [...p, { id: Date.now(), date, amount, category }]);
-                  } else {
-                    setExpenses(p => [...p, { id: Date.now(), date, amount, category }]);
-                  }
+                  saveQuickLog(date, amount, type, category);
                   closeModal();
                 }}>
                   <div className="form-group full">
@@ -1164,13 +1571,8 @@ export default function App() {
                   const f = e.target;
                   const date = f.date.value, amount = parseFloat(f.amount.value) || 0, category = f.category.value;
                   if (!date || amount <= 0) return;
-                  const isInc = modal.type === 'income';
-                  const setter = isInc ? setIncomes : setExpenses;
-                  if (modal.item) {
-                    setter(p => p.map(x => x.id === modal.item.id ? { ...x, date, amount, category } : x));
-                  } else {
-                    setter(p => [...p, { id: Date.now(), date, amount, category }]);
-                  }
+                  const type = modal.type === 'income' ? 'income' : 'expenses';
+                  saveIncomeExpense(modal.item?.id, date, amount, category, type);
                   closeModal();
                   closeDetail();
                 }}>
@@ -1201,11 +1603,7 @@ export default function App() {
                   const f = e.target;
                   const bankName = f.bankName.value, type = f.type.value, accountNumber = f.accountNumber.value, balance = parseFloat(f.balance.value) || 0;
                   if (bankName && accountNumber && balance >= 0) {
-                    if (modal.item) {
-                      setBanks(p => p.map(b => b.id === modal.item.id ? { ...b, bankName, type, accountNumber, balance } : b));
-                    } else {
-                      setBanks(p => [...p, { id: Date.now(), bankName, type, accountNumber, balance }]);
-                    }
+                    saveBank(modal.item?.id, bankName, type, accountNumber, balance);
                     closeModal();
                   }
                 }}>
@@ -1242,11 +1640,7 @@ export default function App() {
                         limit = parseFloat(f.limit.value) || 0, outstanding = parseFloat(f.outstanding.value) || 0,
                         statementDate = f.statementDate.value, dueDate = f.dueDate.value;
                   if (bankName && cardName && cardNumber && limit > 0) {
-                    if (modal.item) {
-                      setCreditCards(p => p.map(c => c.id === modal.item.id ? { ...c, bankName, cardName, cardNumber, limit, outstanding, statementDate, dueDate } : c));
-                    } else {
-                      setCreditCards(p => [...p, { id: Date.now(), bankName, cardName, cardNumber, limit, outstanding, statementDate, dueDate }]);
-                    }
+                    saveCreditCard(modal.item?.id, bankName, cardName, cardNumber, limit, outstanding, statementDate, dueDate);
                     closeModal();
                   }
                 }}>
@@ -1289,11 +1683,7 @@ export default function App() {
                   const f = e.target;
                   const name = f.name.value, amount = parseFloat(f.amount.value) || 0, date = f.date.value;
                   if (name && amount > 0 && date) {
-                    if (modal.item) {
-                      setBorrowers(p => p.map(b => b.id === modal.item.id ? { ...b, name, principal: amount, date } : b));
-                    } else {
-                      setBorrowers(p => [...p, { id: Date.now(), name, principal: amount, repaid: 0, date }]);
-                    }
+                    saveBorrower(modal.item?.id, name, amount, date);
                     closeModal();
                   }
                 }}>
@@ -1360,7 +1750,7 @@ export default function App() {
                 <button className="btn" style={{ flex: 1, justifyContent: 'center', height: 42, borderRadius: 'var(--r-md)', background: 'var(--red-bg)', color: 'var(--red)', border: '1px solid transparent' }}
                   onClick={() => {
                     if (confirm('Delete this record?')) {
-                      (detail.type === 'income' ? setIncomes : setExpenses)(p => p.filter(x => x.id !== detail.item.id));
+                      deleteIncomeExpense(detail.item.id, detail.type === 'income' ? 'income' : 'expenses');
                       closeDetail();
                     }
                   }}>
