@@ -540,78 +540,145 @@ export default function App() {
           )}
 
           {/* ══ MY WEALTH ══ */}
-          {view === 'accounts' && (
-            <div className="fade-in-view">
-              <div className="page-header">
-                <div className="page-header-left">
-                  <span className="eyebrow">Assets</span>
-                  <h1>My Wealth</h1>
-                </div>
-                <div className="page-header-right">
-                  <button className="btn btn-primary" onClick={() => openModal('Add Bank Account', 'bank')}>
-                    <Plus size={15}/> Add Account
-                  </button>
-                </div>
-              </div>
+          {view === 'accounts' && (() => {
+            const bankTotal = banks.reduce((s, b) => s + b.balance, 0);
+            const cashPct = totalWealth > 0 ? ((cash / totalWealth) * 100).toFixed(0) : 0;
+            const bankPct = totalWealth > 0 ? ((bankTotal / totalWealth) * 100).toFixed(0) : 0;
 
-              {/* Hero */}
-              <div className="cred-card" style={{ marginBottom: '1.75rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <div>
-                  <span style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', fontWeight: 800, letterSpacing: 1, textTransform: 'uppercase', display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8 }}>
-                    <span style={{fontSize: '1.2rem', animation: 'float 4s ease-in-out infinite'}}>💎</span> Total Wealth
-                  </span>
-                  <span style={{ fontSize: '3rem', fontWeight: 900, color: 'var(--blue)', letterSpacing: '-1px' }}>{fmt(totalWealth)}</span>
-                  <span style={{ display: 'block', fontSize: '0.85rem', color: 'var(--text-muted)', marginTop: 4 }}>Physical Cash & Bank Accounts combined</span>
-                </div>
-                <Building size={64} style={{ color: 'var(--blue)', opacity: 0.15 }}/>
-              </div>
-
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '1.25rem' }}>
-                {/* Cash Card */}
-                <div className="cred-card" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', background: 'rgba(255, 255, 255, 0.7)' }}>
-                  <div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
-                      <div style={{ background: 'var(--green-bg)', padding: 6, borderRadius: 8 }}><Wallet size={16} color="var(--green)"/></div>
-                      <span style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--green)', textTransform: 'uppercase', letterSpacing: 1 }}>Cash on Hand</span>
-                    </div>
-                    <div style={{ fontSize: '2.5rem', fontWeight: 900, color: 'var(--green)', letterSpacing: -1 }}>{fmt(cash)}</div>
+            return (
+              <div className="fade-in-view">
+                <div className="page-header" style={{ marginBottom: '2rem' }}>
+                  <div className="page-header-left">
+                    <span className="eyebrow">Assets</span>
+                    <h1>My Wealth</h1>
                   </div>
-                  <form onSubmit={e => { e.preventDefault(); const v = e.target.c.value; if (v) { setCash(parseFloat(v)); e.target.reset(); }}} style={{ display: 'flex', gap: 8, marginTop: '2rem' }}>
-                    <input name="c" type="number" placeholder="Update cash amount" min="0" className="cred-input" style={{ flex: 1, background: 'rgba(255,255,255,0.9)' }}/>
-                    <button type="submit" className="btn btn-primary" style={{ padding: '0 24px', fontWeight: 700 }}>Update</button>
-                  </form>
+                  <div className="page-header-right">
+                    <button className="btn btn-primary" onClick={() => openModal('Add Bank Account', 'bank')}>
+                      <Plus size={15}/> Add Account
+                    </button>
+                  </div>
                 </div>
 
-                {/* Bank Cards */}
-                {banks.map((acc, idx) => (
-                  <div key={acc.id} className="cred-card" style={{ position: 'relative', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', background: 'rgba(255, 255, 255, 0.7)' }}>
-                    <div style={{ position: 'absolute', top: 16, right: 16, zIndex: 10, display: 'flex', gap: 6 }}>
-                      <button className="btn-icon" style={{ background: 'rgba(255,255,255,0.8)' }} onClick={() => openModal('Edit Bank Account', 'bank', acc)}>
-                        <Edit3 size={13} color="var(--text-primary)"/>
-                      </button>
-                      <button className="btn-icon danger" onClick={() => { if (confirm(`Remove ${acc.bankName} account?`)) setBanks(p => p.filter(b => b.id !== acc.id)); }}>
-                        <Trash2 size={13}/>
-                      </button>
+                {/* Elegant Total Wealth Header Card */}
+                <div className="panel" style={{ padding: '2rem', marginBottom: '2rem', display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: '2rem', alignItems: 'center' }}>
+                  <div>
+                    <span style={{ color: 'var(--text-secondary)', fontSize: '0.8rem', fontWeight: 800, letterSpacing: 1, textTransform: 'uppercase', display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8 }}>
+                      💎 Total Net Wealth
+                    </span>
+                    <span style={{ fontSize: '3rem', fontWeight: 900, color: 'var(--accent)', letterSpacing: '-1.5px', lineHeight: 1.1 }}>{fmt(totalWealth)}</span>
+                    <p style={{ fontSize: '0.82rem', color: 'var(--text-muted)', marginTop: 8, fontWeight: 500 }}>Combined valuation of physical cash and active bank deposits.</p>
+                  </div>
+                  
+                  {/* Visual ratio bar */}
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', borderLeft: '1px solid var(--border)', paddingLeft: '2rem' }}>
+                    <div style={{ fontSize: '0.75rem', fontWeight: 800, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Asset Distribution</div>
+                    <div style={{ display: 'flex', height: 8, borderRadius: 99, overflow: 'hidden', background: 'var(--border)' }}>
+                      <div style={{ width: `${cashPct}%`, background: 'var(--green)' }} title={`Cash: ${cashPct}%`}/>
+                      <div style={{ width: `${bankPct}%`, background: 'var(--blue)' }} title={`Banks: ${bankPct}%`}/>
                     </div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem', fontWeight: 700 }}>
+                      <span style={{ color: 'var(--green)', display: 'flex', alignItems: 'center', gap: 4 }}>
+                        <span style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--green)' }}/> Cash ({cashPct}%)
+                      </span>
+                      <span style={{ color: 'var(--blue)', display: 'flex', alignItems: 'center', gap: 4 }}>
+                        <span style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--blue)' }}/> Banks ({bankPct}%)
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(310px, 1fr))', gap: '1.5rem' }}>
+                  {/* Cash Card */}
+                  <div className="panel" style={{ padding: '1.5rem', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', gap: '1.5rem', borderTop: '4px solid var(--green)' }}>
                     <div>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>
-                        <div style={{ background: 'var(--blue-bg)', padding: 10, borderRadius: 10 }}><Building size={20} color="var(--blue)"/></div>
-                        <div>
-                          <div style={{ fontWeight: 800, fontSize: '1.1rem', color: 'var(--text-primary)' }}>{acc.bankName}</div>
-                          <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>{acc.type} Account</div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
+                        <Wallet size={16} color="var(--green)"/>
+                        <span style={{ fontSize: '0.8rem', fontWeight: 800, color: 'var(--green)', textTransform: 'uppercase', letterSpacing: 0.5 }}>Cash on Hand</span>
+                      </div>
+                      <div style={{ fontSize: '2.4rem', fontWeight: 900, color: 'var(--green)', letterSpacing: -1 }}>{fmt(cash)}</div>
+                      <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)', fontWeight: 600 }}>Physical liquidity (in hand)</span>
+                    </div>
+                    
+                    <form 
+                      onSubmit={e => { e.preventDefault(); const v = e.target.c.value; if (v) { setCash(parseFloat(v)); e.target.reset(); }}} 
+                      style={{ display: 'flex', gap: 8, borderTop: '1px solid var(--border)', paddingTop: '1rem' }}
+                    >
+                      <div style={{ position: 'relative', flex: 1 }}>
+                        <span style={{ position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)', fontWeight: 700, color: 'var(--text-muted)', fontSize: '0.85rem' }}>₹</span>
+                        <input 
+                          name="c" 
+                          type="number" 
+                          placeholder="New amount" 
+                          min="0" 
+                          required
+                          style={{
+                            width: '100%',
+                            padding: '8px 10px 8px 20px',
+                            background: 'var(--bg-base)',
+                            border: '1px solid var(--border)',
+                            borderRadius: '6px',
+                            fontSize: '0.85rem',
+                            fontWeight: 700
+                          }}
+                        />
+                      </div>
+                      <button type="submit" className="btn btn-primary" style={{ padding: '0 16px', borderRadius: '6px', fontSize: '0.8rem', height: '34px' }}>Update</button>
+                    </form>
+                  </div>
+
+                  {/* Bank Cards */}
+                  {banks.map((acc) => (
+                    <div 
+                      key={acc.id} 
+                      className="panel" 
+                      style={{ 
+                        padding: '1.5rem', 
+                        display: 'flex', 
+                        flexDirection: 'column', 
+                        justifyContent: 'space-between', 
+                        gap: '1.25rem', 
+                        borderTop: '4px solid var(--blue)' 
+                      }}
+                    >
+                      <div>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 12 }}>
+                          <div>
+                            <h3 style={{ fontSize: '1.15rem', fontWeight: 800, color: 'var(--text-primary)', margin: 0 }}>{acc.bankName}</h3>
+                            <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)', fontWeight: 700, textTransform: 'uppercase' }}>{acc.type} Account</span>
+                          </div>
+                          <span style={{ fontSize: '0.72rem', color: 'var(--text-secondary)', background: 'var(--border)', padding: '3px 8px', borderRadius: '4px', fontWeight: 750, fontFamily: 'monospace' }}>
+                            ****{acc.accountNumber.slice(-4)}
+                          </span>
                         </div>
                       </div>
-                      <div style={{ fontSize: '1.1rem', letterSpacing: '3px', color: 'var(--text-muted)', fontFamily: 'monospace', marginBottom: 12 }}>**** **** **** {acc.accountNumber.slice(-4)}</div>
+
+                      <div style={{ background: 'var(--bg-base)', borderRadius: '8px', padding: '10px 14px', border: '1px solid var(--border)' }}>
+                        <span style={{ fontSize: '0.65rem', color: 'var(--text-muted)', fontWeight: 700, textTransform: 'uppercase', display: 'block', marginBottom: 2 }}>Balance</span>
+                        <div style={{ fontSize: '1.5rem', fontWeight: 900, color: 'var(--blue)' }}>{fmt(acc.balance)}</div>
+                      </div>
+
+                      {/* Actions */}
+                      <div style={{ display: 'flex', justifyContent: 'space-between', borderTop: '1px solid var(--border)', paddingTop: '1rem' }}>
+                        <button 
+                          onClick={() => openModal('Edit Bank Account', 'bank', acc)}
+                          style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: '0.78rem', fontWeight: 800, color: 'var(--text-secondary)', cursor: 'pointer' }}
+                        >
+                          <Edit3 size={13}/> Edit Account
+                        </button>
+                        <button 
+                          onClick={() => { if (confirm(`Remove ${acc.bankName} account?`)) setBanks(p => p.filter(b => b.id !== acc.id)); }}
+                          style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: '0.78rem', fontWeight: 800, color: 'var(--red)', cursor: 'pointer' }}
+                        >
+                          <Trash2 size={13}/> Delete
+                        </button>
+                      </div>
                     </div>
-                    <div style={{ background: 'var(--blue-bg)', borderRadius: 'var(--r-md)', padding: '12px 16px', marginTop: 16, border: '1px solid rgba(59, 130, 246, 0.1)' }}>
-                      <div style={{ fontSize: '0.7rem', color: 'var(--blue)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 1, marginBottom: 4 }}>Available Balance</div>
-                      <div style={{ fontSize: '1.6rem', fontWeight: 900, color: 'var(--blue)' }}>{fmt(acc.balance)}</div>
-                    </div>
-                  </div>
-                ))}
+                  ))}
+                </div>
               </div>
-            </div>
-          )}
+            );
+          })()}
+
 
           {/* ══ CREDIT CARDS ══ */}
           {view === 'credit-cards' && (() => {

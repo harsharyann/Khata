@@ -1350,6 +1350,17 @@ input, select, textarea { font-family: var(--font); outline: none; }
     grid-template-columns: 1fr !important;
     gap: 1.5rem !important;
   }
+  /* Stacks double column total wealth card on mobile */
+  .panel[style*="grid-template-columns"] {
+    grid-template-columns: 1fr !important;
+    gap: 1.5rem !important;
+  }
+  .panel[style*="grid-template-columns"] > div:last-child {
+    border-left: none !important;
+    padding-left: 0 !important;
+    padding-top: 1rem;
+    border-top: 1px solid var(--border);
+  }
 }
 @media (max-width: 640px) {
   .app-container { flex-direction: column; }
