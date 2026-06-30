@@ -415,135 +415,16 @@ export default function App() {
             </div>
           )}
 
+
           {/* ══ DASHBOARD ══ */}
           {view === 'dashboard' && (
-            <div className="fade-in-view">
-              <div className="page-header">
-                <div className="page-header-left">
-                  <span className="eyebrow">Financial Overview</span>
-                  <h1>Dashboard</h1>
-                </div>
-                <div className="page-header-right"><MonthSel/></div>
+            <div className="fade-in-view" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '60vh', textAlign: 'center', gap: '1.5rem' }}>
+              <div style={{ fontSize: '4rem' }}>🚧</div>
+              <div>
+                <h1 style={{ fontSize: '2rem', fontWeight: 900, color: 'var(--text-primary)', letterSpacing: '-0.5px' }}>Coming Soon</h1>
+                <p style={{ fontSize: '1rem', color: 'var(--text-muted)', marginTop: '0.5rem', fontWeight: 500 }}>Dashboard is being rebuilt from scratch.</p>
               </div>
-
-              <div className="bento-grid" style={{ marginBottom: '1.75rem' }}>
-                <div className="cred-card bento-col-3" style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                  <div style={{ color: 'var(--text-secondary)', fontSize: '0.8rem', fontWeight: 800, letterSpacing: 1, textTransform: 'uppercase', display: 'flex', alignItems: 'center', gap: 6 }}>
-                    <span style={{fontSize: '1.2rem', animation: 'float 4s ease-in-out infinite'}}>🏦</span> Total Wealth
-                  </div>
-                  <div style={{ fontSize: '2.2rem', fontWeight: 900, color: 'var(--blue)' }}>{fmt(totalWealth)}</div>
-                  <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Net Liquid Assets</div>
-                </div>
-                <div className="cred-card bento-col-3" style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                  <div style={{ color: 'var(--text-secondary)', fontSize: '0.8rem', fontWeight: 800, letterSpacing: 1, textTransform: 'uppercase', display: 'flex', alignItems: 'center', gap: 6 }}>
-                    <span style={{fontSize: '1.2rem', animation: 'float 3s ease-in-out infinite 0.2s'}}>💵</span> Cash on Hand
-                  </div>
-                  <div style={{ fontSize: '2.2rem', fontWeight: 900, color: 'var(--green)' }}>{fmt(cash)}</div>
-                  <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Physical Currency</div>
-                </div>
-                <div className="cred-card bento-col-3" style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                  <div style={{ color: 'var(--text-secondary)', fontSize: '0.8rem', fontWeight: 800, letterSpacing: 1, textTransform: 'uppercase', display: 'flex', alignItems: 'center', gap: 6 }}>
-                    <span style={{fontSize: '1.2rem', animation: 'float 3.5s ease-in-out infinite 0.4s'}}>🏛️</span> Bank Balances
-                  </div>
-                  <div style={{ fontSize: '2.2rem', fontWeight: 900, color: 'var(--text-primary)' }}>{fmt(banks.reduce((s, b) => s + b.balance, 0))}</div>
-                  <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Across {banks.length} Accounts</div>
-                </div>
-                <div className="cred-card bento-col-3" style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                  <div style={{ color: 'var(--text-secondary)', fontSize: '0.8rem', fontWeight: 800, letterSpacing: 1, textTransform: 'uppercase', display: 'flex', alignItems: 'center', gap: 6 }}>
-                    <span style={{fontSize: '1.2rem', animation: 'float 2.5s ease-in-out infinite 0.6s'}}>💳</span> Credit Debt
-                  </div>
-                  <div style={{ fontSize: '2.2rem', fontWeight: 900, color: 'var(--red)' }}>{fmt(ccDebt)}</div>
-                  <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Used out of {fmt(ccLimit)} Limit</div>
-                </div>
-              </div>
-
-              {/* Charts Grid */}
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.25rem', marginBottom: '1.75rem' }}>
-                <div className="cred-card" style={{ padding: 0 }}>
-                  <div className="panel-header" style={{ background: 'transparent', borderBottom: '1px solid var(--border)' }}>
-                    <TrendingUp size={16} style={{ color: 'var(--green)' }}/>
-                    <h3>15-Day Cashflow Trend</h3>
-                  </div>
-                  <div className="panel-body" style={{ height: 260 }}>
-                    <Line data={lineData} options={chartOpts}/>
-                  </div>
-                </div>
-                <div className="cred-card" style={{ padding: 0 }}>
-                  <div className="panel-header" style={{ background: 'transparent', borderBottom: '1px solid var(--border)' }}>
-                    <BarChart2 size={16} style={{ color: 'var(--blue)' }}/>
-                    <h3>Yearly Overview</h3>
-                  </div>
-                  <div className="panel-body" style={{ height: 260 }}>
-                    <Bar data={yearlyBarData} options={chartOpts}/>
-                  </div>
-                </div>
-              </div>
-
-              {/* Lower Section */}
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-                
-
-
-                {/* Bank Accounts Bento */}
-                <div className="cred-card" style={{ padding: 0 }}>
-                  <div className="panel-header" style={{ cursor: 'pointer', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }} onClick={() => setBanksCollapsed(!banksCollapsed)}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                      <Building size={16} style={{ color: 'var(--blue)' }}/>
-                      <h3>Bank Accounts ({banks.length})</h3>
-                    </div>
-                    <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', fontWeight: 600 }}>{banksCollapsed ? '▼ Expand' : '▲ Collapse'}</span>
-                  </div>
-                  {!banksCollapsed && (
-                    <div className="panel-body" style={{ padding: '1.25rem' }}>
-                      {banks.length > 0 ? (
-                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '0.75rem' }}>
-                          {banks.map(acc => (
-                            <div key={acc.id} style={{ padding: '12px', background: 'var(--blue-bg)', border: '1px solid rgba(59, 130, 246, 0.2)', borderRadius: 'var(--r-md)', display: 'flex', flexDirection: 'column', gap: 4 }}>
-                              <div style={{ fontWeight: 700, fontSize: '0.9rem', color: 'var(--blue)' }}>{acc.bankName}</div>
-                              <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>{acc.type} • ****{acc.accountNumber.slice(-4)}</div>
-                              <div style={{ fontWeight: 800, fontSize: '1.1rem', color: 'var(--text-primary)', marginTop: 4 }}>{fmt(acc.balance)}</div>
-                            </div>
-                          ))}
-                        </div>
-                      ) : (
-                        <div className="empty-state">No bank accounts added.</div>
-                      )}
-                    </div>
-                  )}
-                </div>
-
-                {/* Credit Cards Bento */}
-                <div className="cred-card" style={{ padding: 0 }}>
-                  <div className="panel-header" style={{ cursor: 'pointer', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }} onClick={() => setCardsCollapsed(!cardsCollapsed)}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                      <CreditCard size={16} style={{ color: 'var(--red)' }}/>
-                      <h3>Credit Cards ({creditCards.length})</h3>
-                    </div>
-                    <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', fontWeight: 600 }}>{cardsCollapsed ? '▼ Expand' : '▲ Collapse'}</span>
-                  </div>
-                  {!cardsCollapsed && (
-                    <div className="panel-body" style={{ padding: '1.25rem' }}>
-                      {creditCards.length > 0 ? (
-                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '0.75rem' }}>
-                          {creditCards.map(cc => (
-                            <div key={cc.id} style={{ padding: '12px', background: 'var(--red-bg)', border: '1px solid rgba(239, 68, 68, 0.2)', borderRadius: 'var(--r-md)', display: 'flex', flexDirection: 'column', gap: 4 }}>
-                              <div style={{ fontWeight: 700, fontSize: '0.9rem', color: 'var(--red)' }}>{cc.bankName} CC</div>
-                              <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>Limit: {fmt(cc.limit)}</div>
-                              <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>Used: {fmt(cc.outstanding)}</div>
-                              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginTop: 2 }}>
-                                <div style={{ fontWeight: 850, fontSize: '1rem', color: 'var(--red)' }}>Avail: {fmt(cc.limit - cc.outstanding)}</div>
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      ) : (
-                        <div className="empty-state">No credit cards added.</div>
-                      )}
-                    </div>
-                  )}
-                </div>
-
-              </div>
+              <span style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-secondary)', background: 'var(--bg-hover)', padding: '6px 16px', borderRadius: 99, border: '1px solid var(--border)' }}>Work in progress</span>
             </div>
           )}
 
