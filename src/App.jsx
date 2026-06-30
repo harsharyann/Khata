@@ -297,124 +297,253 @@ export default function App() {
 
           {/* ══ HOME ══ */}
           {view === 'home' && (
-            <div className="fade-in-view">
-              <div className="page-header">
-                <div className="page-header-left">
-                  <span className="eyebrow">{new Date().toLocaleDateString('en-US', { weekday: 'long', day: 'numeric', month: 'short', year: 'numeric' })}</span>
-                  <h1>Welcome, Shailesh</h1>
+            <div className="fade-in-view" style={{ maxWidth: '1200px', margin: '0 auto', padding: '0 0 1.5rem 0' }}>
+              
+              {/* 1. Welcoming & Header Section */}
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
+                <div>
+                  <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', fontWeight: 700, letterSpacing: 1, textTransform: 'uppercase', marginBottom: 4 }}>
+                    {new Date().toLocaleDateString('en-US', { weekday: 'long', day: 'numeric', month: 'short' })}
+                  </div>
+                  <h1 style={{ fontSize: '2rem', fontWeight: 900, color: 'var(--text-primary)', letterSpacing: '-0.5px' }}>Welcome, Shailesh</h1>
                 </div>
-                <div className="page-header-right">
+                <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
                   <MonthSel/>
-                  <button className="btn btn-primary" onClick={() => openModal('Log Cashflow', 'quick-log')}>
-                    <Plus size={15}/> Log Transaction
+                  <button className="btn btn-primary" onClick={() => openModal('Log Cashflow', 'quick-log')} style={{ borderRadius: 99, padding: '0 20px', height: 40, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 6 }}>
+                    <Plus size={16}/> Add Transaction
                   </button>
                 </div>
               </div>
 
-              <div className="bento-grid">
-                <div className="cred-card bento-col-4" style={{ display: 'flex', flexDirection: 'column', gap: 8, padding: '2rem', boxShadow: '0 8px 32px rgba(16, 185, 129, 0.15)' }}>
-                  <div style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', fontWeight: 800, letterSpacing: 1, textTransform: 'uppercase', display: 'flex', alignItems: 'center', gap: 8 }}><span style={{fontSize: '1.2rem', animation: 'float 3s ease-in-out infinite'}}>📈</span> Total Income</div>
-                  <div style={{ fontSize: '2.5rem', fontWeight: 900, color: 'var(--green)' }}>{fmt(totInc)}</div>
-                </div>
-                <div className="cred-card bento-col-4" style={{ display: 'flex', flexDirection: 'column', gap: 8, padding: '2rem', boxShadow: '0 8px 32px rgba(239, 68, 68, 0.15)' }}>
-                  <div style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', fontWeight: 800, letterSpacing: 1, textTransform: 'uppercase', display: 'flex', alignItems: 'center', gap: 8 }}><span style={{fontSize: '1.2rem', animation: 'float 3s ease-in-out infinite 0.5s'}}>📉</span> Total Expenses</div>
-                  <div style={{ fontSize: '2.5rem', fontWeight: 900, color: 'var(--red)' }}>{fmt(totExp)}</div>
-                </div>
-                <div className="cred-card bento-col-4" style={{ display: 'flex', flexDirection: 'column', gap: 8, padding: '2rem', position: 'relative', overflow: 'hidden', boxShadow: '0 8px 32px rgba(59, 130, 246, 0.15)' }}>
-                  <div style={{ position: 'absolute', right: -20, top: -20, fontSize: '8rem', opacity: 0.1, animation: 'float 6s ease-in-out infinite' }}>💰</div>
-                  <div style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', fontWeight: 800, letterSpacing: 1, textTransform: 'uppercase', display: 'flex', alignItems: 'center', gap: 8, zIndex: 1 }}><span style={{fontSize: '1.2rem'}}>💎</span> Net Savings</div>
-                  <div style={{ fontSize: '2.5rem', fontWeight: 900, color: net >= 0 ? 'var(--blue)' : 'var(--red)', zIndex: 1 }}>{(net >= 0 ? '+' : '') + fmt(net)}</div>
-                </div>
-              </div>
-
-              {/* Quick Add Form */}
-              <div className="cred-card" style={{ marginBottom: '2.5rem', border: '1px solid rgba(59, 130, 246, 0.2)' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '20px' }}>
-                  <Plus size={18} style={{ color: 'var(--blue)' }}/>
-                  <h3 style={{ fontSize: '1.05rem', fontWeight: 800, color: 'var(--blue)', letterSpacing: 0.5, textTransform: 'uppercase' }}>Quick Entry</h3>
-                </div>
-                <form onSubmit={(e) => {
-                  e.preventDefault();
-                  const f = e.target;
-                  const date = f.date.value;
-                  const inc = parseFloat(f.income.value) || 0;
-                  const exp = parseFloat(f.expense.value) || 0;
-                  if (!date || (inc === 0 && exp === 0)) { alert('Enter a date and at least one amount.'); return; }
+              {/* Editorial Page Layout */}
+              <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '2rem', alignItems: 'start' }}>
+                
+                {/* LEFT COLUMN */}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
                   
-                  if (inc > 0) {
-                    setIncomes(p => [{ id: Date.now(), date, amount: inc, category: 'Others' }, ...p]);
-                  }
-                  if (exp > 0) {
-                    setExpenses(p => [{ id: Date.now() + 1, date, amount: exp, category: 'Others' }, ...p]);
-                  }
-                  f.reset();
-                  f.date.value = new Date().toISOString().split('T')[0];
-                }} style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '1.25rem', alignItems: 'end' }}>
-                  <div>
-                    <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: 6, textTransform: 'uppercase', letterSpacing: 1 }}>Transaction Date</label>
-                    <input type="date" name="date" required defaultValue={new Date().toISOString().split('T')[0]} className="cred-input"/>
-                  </div>
-                  <div>
-                    <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 800, color: 'var(--green)', marginBottom: 6, textTransform: 'uppercase', letterSpacing: 1 }}>Income (₹)</label>
-                    <input type="number" name="income" placeholder="0" min="0" step="0.01" className="cred-input" style={{ color: 'var(--green)', fontWeight: 800 }}/>
-                  </div>
-                  <div>
-                    <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 800, color: 'var(--red)', marginBottom: 6, textTransform: 'uppercase', letterSpacing: 1 }}>Expense (₹)</label>
-                    <input type="number" name="expense" placeholder="0" min="0" step="0.01" className="cred-input" style={{ color: 'var(--red)', fontWeight: 800 }}/>
-                  </div>
-                  <button type="submit" className="btn btn-primary" style={{ height: '48px', padding: '0 24px', fontWeight: 800, fontSize: '1rem', textTransform: 'uppercase', letterSpacing: 1 }}>Save Entry</button>
-                </form>
-              </div>
+                  {/* 2. Total Funds Hero Card */}
+                  <div className="cred-card" style={{
+                    background: 'linear-gradient(135deg, #4f46e5 0%, #312e81 100%)',
+                    color: 'white',
+                    padding: '2.5rem',
+                    borderRadius: '24px',
+                    boxShadow: '0 20px 40px rgba(79, 70, 229, 0.15)',
+                    position: 'relative',
+                    overflow: 'hidden',
+                    border: 'none'
+                  }}>
+                    {/* Abstract design elements */}
+                    <div style={{ position: 'absolute', top: '-10%', right: '-10%', width: '300px', height: '300px', background: 'radial-gradient(circle, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0) 70%)', borderRadius: '50%' }}/>
+                    
+                    <div style={{ zIndex: 1, position: 'relative' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '2rem' }}>
+                        <div>
+                          <span style={{ fontSize: '0.85rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '1.5px', opacity: 0.8 }}>Available Liquidity</span>
+                          <h2 style={{ fontSize: '3.5rem', fontWeight: 900, marginTop: '0.25rem', letterSpacing: '-1px' }}>{fmt(cash + banks.reduce((s, b) => s + b.balance, 0) - ccDebt)}</h2>
+                        </div>
+                        <div style={{ background: 'rgba(255,255,255,0.1)', padding: 12, borderRadius: 16, backdropFilter: 'blur(10px)' }}>
+                          <Wallet size={24} color="white"/>
+                        </div>
+                      </div>
 
-              <div style={{ marginBottom: '1rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <div>
-                  <h2 style={{ fontSize: '1.1rem', fontWeight: 700, color: 'var(--text-primary)' }}>Daily Cashflow Summary</h2>
-                  <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginTop: '2px' }}>Statement for {monthStr}</p>
-                </div>
-              </div>
+                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1rem', borderTop: '1px solid rgba(255,255,255,0.15)', paddingTop: '1.5rem' }}>
+                        <div>
+                          <div style={{ fontSize: '0.72rem', fontWeight: 600, opacity: 0.7, textTransform: 'uppercase', letterSpacing: 0.5 }}>CASH ON HAND</div>
+                          <div style={{ fontSize: '1.15rem', fontWeight: 800 }}>{fmt(cash)}</div>
+                        </div>
+                        <div>
+                          <div style={{ fontSize: '0.72rem', fontWeight: 600, opacity: 0.7, textTransform: 'uppercase', letterSpacing: 0.5 }}>BANK BALANCES</div>
+                          <div style={{ fontSize: '1.15rem', fontWeight: 800 }}>{fmt(banks.reduce((s, b) => s + b.balance, 0))}</div>
+                        </div>
+                        <div>
+                          <div style={{ fontSize: '0.72rem', fontWeight: 600, opacity: 0.7, textTransform: 'uppercase', letterSpacing: 0.5 }}>CARD OUTSTANDING</div>
+                          <div style={{ fontSize: '1.15rem', fontWeight: 800, color: '#fca5a5' }}>-{fmt(ccDebt)}</div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
 
-              <div className="data-table-wrap">
-                <table className="data-table">
-                  <thead>
-                    <tr>
-                      <th>Date</th>
-                      <th>Daily Income (₹)</th>
-                      <th>Daily Expense (₹)</th>
-                      <th>Net Balance (₹)</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {(() => {
-                      const map = {};
-                      [...curInc, ...curExp].forEach(item => {
-                        const d = item.date;
-                        if (!map[d]) map[d] = { date: d, inc: 0, exp: 0 };
-                        if (incomes.some(i => i.id === item.id)) map[d].inc += item.amount;
-                        else map[d].exp += item.amount;
-                      });
-                      const daily = Object.values(map).sort((a,b) => new Date(b.date) - new Date(a.date)).slice(0, 12);
-                      
-                      if (daily.length === 0) return <tr><td colSpan="4" className="empty-state">No records for this month</td></tr>;
-                      
-                      return daily.map(item => {
-                        const net = item.inc - item.exp;
-                        return (
-                          <tr key={item.date}>
-                            <td style={{ fontWeight: 500, color: 'var(--text-secondary)' }}>{fmtDate(item.date)}</td>
-                            <td style={{ fontWeight: 700, color: 'var(--green)' }}>{item.inc > 0 ? '+' + fmt(item.inc) : '—'}</td>
-                            <td style={{ fontWeight: 700, color: 'var(--red)' }}>{item.exp > 0 ? '-' + fmt(item.exp) : '—'}</td>
-                            <td>
-                              <span className={`badge ${net >= 0 ? 'green' : 'red'}`}>
-                                {net > 0 ? '+' : ''}{fmt(net)}
+                  {/* 3. Metrics Cards (Income, Expense, Net Savings) */}
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1.25rem' }}>
+                    
+                    {/* Income Card */}
+                    <div className="cred-card" style={{ padding: '1.5rem', display: 'flex', flexDirection: 'column', gap: 8, border: '1px solid var(--border)', boxShadow: 'var(--shadow-sm)' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <span style={{ fontSize: '0.72rem', fontWeight: 800, color: 'var(--text-secondary)', letterSpacing: 0.5 }}>INCOME</span>
+                        <span style={{ color: 'var(--green)', display: 'flex', alignItems: 'center', gap: 2, fontSize: '0.75rem', fontWeight: 700 }}><ArrowUpRight size={14}/> +12%</span>
+                      </div>
+                      <div style={{ fontSize: '1.75rem', fontWeight: 900, color: 'var(--green)' }}>{fmt(totInc)}</div>
+                      <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>Earned this month</div>
+                    </div>
+
+                    {/* Expense Card */}
+                    <div className="cred-card" style={{ padding: '1.5rem', display: 'flex', flexDirection: 'column', gap: 8, border: '1px solid var(--border)', boxShadow: 'var(--shadow-sm)' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <span style={{ fontSize: '0.72rem', fontWeight: 800, color: 'var(--text-secondary)', letterSpacing: 0.5 }}>EXPENSES</span>
+                        <span style={{ color: 'var(--red)', display: 'flex', alignItems: 'center', gap: 2, fontSize: '0.75rem', fontWeight: 700 }}><ArrowDownRight size={14}/> -4%</span>
+                      </div>
+                      <div style={{ fontSize: '1.75rem', fontWeight: 900, color: 'var(--red)' }}>{fmt(totExp)}</div>
+                      <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>Spent this month</div>
+                    </div>
+
+                    {/* Net Savings Card */}
+                    <div className="cred-card" style={{ padding: '1.5rem', display: 'flex', flexDirection: 'column', gap: 8, border: '1px solid var(--border)', boxShadow: 'var(--shadow-sm)' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <span style={{ fontSize: '0.72rem', fontWeight: 800, color: 'var(--text-secondary)', letterSpacing: 0.5 }}>NET SAVINGS</span>
+                        <span style={{ color: net >= 0 ? 'var(--blue)' : 'var(--red)', display: 'flex', alignItems: 'center', gap: 2, fontSize: '0.75rem', fontWeight: 700 }}>
+                          {net >= 0 ? 'Positive' : 'Deficit'}
+                        </span>
+                      </div>
+                      <div style={{ fontSize: '1.75rem', fontWeight: 900, color: net >= 0 ? 'var(--blue)' : 'var(--red)' }}>{fmt(net)}</div>
+                      <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>Saved this month</div>
+                    </div>
+
+                  </div>
+
+                  {/* 4. Monthly Cashflow Chart */}
+                  <div className="cred-card" style={{ padding: '1.5rem', border: '1px solid var(--border)' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+                      <div>
+                        <h3 style={{ fontSize: '1rem', fontWeight: 800, color: 'var(--text-primary)' }}>Monthly Cashflow</h3>
+                        <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Stripe-inspired daily analytics trend</p>
+                      </div>
+                    </div>
+                    <div style={{ height: 240 }}>
+                      <Line data={lineData} options={chartOpts}/>
+                    </div>
+                  </div>
+
+                  {/* 5. Recent Activity Preview */}
+                  <div className="cred-card" style={{ padding: 0, overflow: 'hidden', border: '1px solid var(--border)' }}>
+                    <div style={{ padding: '1.25rem 1.5rem', borderBottom: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <h3 style={{ fontSize: '1rem', fontWeight: 800, color: 'var(--text-primary)' }}>Recent Activity</h3>
+                      <button className="btn-icon" onClick={() => setView('cashflow')} style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--accent)', border: 'none', background: 'none', cursor: 'pointer' }}>View All</button>
+                    </div>
+                    <div style={{ display: 'flex', flexDirection: 'column' }}>
+                      {(() => {
+                        const recent = [...incomes, ...expenses].sort((a,b) => new Date(b.date) - new Date(a.date)).slice(0, 4);
+                        if (recent.length === 0) return <div style={{ padding: '2rem', textAlign: 'center', color: 'var(--text-muted)' }}>No recent transactions</div>;
+                        return recent.map((item, idx) => {
+                          const isInc = incomes.some(x => x.id === item.id);
+                          return (
+                            <div key={item.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '1rem 1.5rem', borderBottom: idx < recent.length - 1 ? '1px solid var(--border-soft)' : 'none', background: 'var(--bg-card)' }}>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                                <div style={{ background: isInc ? 'var(--green-bg)' : 'var(--red-bg)', padding: 8, borderRadius: 10 }}>
+                                  {isInc ? <ArrowUpRight size={16} color="var(--green)"/> : <ArrowDownRight size={16} color="var(--red)"/>}
+                                </div>
+                                <div>
+                                  <div style={{ fontSize: '0.9rem', fontWeight: 700, color: 'var(--text-primary)' }}>{item.category || 'Others'}</div>
+                                  <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>{fmtDate(item.date)}</div>
+                                </div>
+                              </div>
+                              <span style={{ fontWeight: 800, fontSize: '0.95rem', color: isInc ? 'var(--green)' : 'var(--red)' }}>
+                                {isInc ? '+' : '-'}{fmt(item.amount)}
                               </span>
-                            </td>
-                          </tr>
-                        );
-                      });
+                            </div>
+                          );
+                        });
+                      })()}
+                    </div>
+                  </div>
+
+                </div>
+
+                {/* RIGHT COLUMN */}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
+                  
+                  {/* 6. AI Insight Card */}
+                  <div className="cred-card" style={{
+                    background: 'linear-gradient(135deg, #1e1b4b 0%, #0f172a 100%)',
+                    color: 'white',
+                    padding: '1.5rem',
+                    borderRadius: '20px',
+                    position: 'relative',
+                    overflow: 'hidden',
+                    border: 'none',
+                    boxShadow: 'var(--shadow-md)'
+                  }}>
+                    <div style={{ position: 'absolute', right: -15, bottom: -15, fontSize: '4rem', opacity: 0.15 }}>⚡</div>
+                    <div style={{ fontSize: '0.7rem', fontWeight: 900, color: 'var(--accent)', letterSpacing: '1px', textTransform: 'uppercase', marginBottom: '0.75rem' }}>AI INSIGHTS</div>
+                    <h4 style={{ fontSize: '0.95rem', fontWeight: 700, marginBottom: '0.5rem', lineHeight: 1.4 }}>Optimizing Liquidity Flow</h4>
+                    <p style={{ fontSize: '0.78rem', color: 'rgba(255,255,255,0.7)', lineHeight: 1.5, marginBottom: '0.5rem' }}>
+                      {totExp > totInc 
+                        ? "Your expenses exceed income this month by " + fmt(totExp - totInc) + ". Consider reviewing category dues to maintain positive cashflow."
+                        : "Excellent savings rate! Your net savings are positive by " + fmt(net) + ". You can allocate ₹25,000 towards Samiti pools or high-yield wealth accounts."}
+                    </p>
+                  </div>
+
+                  {/* 7. Savings Goal Card */}
+                  <div className="cred-card" style={{ padding: '1.5rem', border: '1px solid var(--border)' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+                      <span style={{ fontSize: '0.72rem', fontWeight: 800, color: 'var(--text-secondary)', letterSpacing: 0.5 }}>SAVINGS GOAL</span>
+                      <Target size={16} style={{ color: 'var(--blue)' }}/>
+                    </div>
+                    <div style={{ marginBottom: 12 }}>
+                      <div style={{ fontSize: '1.25rem', fontWeight: 900, color: 'var(--text-primary)' }}>₹10,00,000</div>
+                      <div style={{ fontSize: '0.72rem', color: 'var(--text-secondary)' }}>Target Net Wealth</div>
+                    </div>
+                    {(() => {
+                      const netWealth = cash + banks.reduce((s, b) => s + b.balance, 0) + lentOut - ccDebt;
+                      const progress = Math.min(Math.max((netWealth / 1000000) * 100, 0), 100).toFixed(0);
+                      return (
+                        <div>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.7rem', fontWeight: 700, color: 'var(--text-secondary)', marginBottom: 6 }}>
+                            <span>Progress: {progress}%</span>
+                            <span>{fmt(netWealth)} saved</span>
+                          </div>
+                          <div style={{ height: 6, background: 'rgba(0,0,0,0.06)', borderRadius: 99, overflow: 'hidden' }}>
+                            <div style={{ height: '100%', background: 'linear-gradient(90deg, var(--blue) 0%, var(--accent) 100%)', width: `${progress}%` }}/>
+                          </div>
+                        </div>
+                      );
                     })()}
-                  </tbody>
-                </table>
+                  </div>
+
+                  {/* 8. Upcoming Dues Card */}
+                  <div className="cred-card" style={{ padding: '1.5rem', border: '1px solid var(--border)' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
+                      <span style={{ fontSize: '0.72rem', fontWeight: 800, color: 'var(--text-secondary)', letterSpacing: 0.5 }}>UPCOMING DUES</span>
+                      <Calendar size={16} style={{ color: 'var(--red)' }}/>
+                    </div>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                      {(() => {
+                        const cardDues = creditCards.filter(c => c.outstanding > 0);
+                        const borrowerDues = borrowers.filter(b => b.principal > b.repaid);
+                        
+                        if (cardDues.length === 0 && borrowerDues.length === 0) {
+                          return <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>All dues settled</div>;
+                        }
+                        
+                        return (
+                          <>
+                            {cardDues.map(c => (
+                              <div key={c.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                <div>
+                                  <div style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--text-primary)' }}>{c.bankName} CC</div>
+                                  <div style={{ fontSize: '0.68rem', color: 'var(--text-muted)' }}>Due: {c.dueDate ? `${c.dueDate}th` : 'N/A'}</div>
+                                </div>
+                                <span style={{ fontSize: '0.8rem', fontWeight: 800, color: 'var(--red)' }}>{fmt(c.outstanding)}</span>
+                              </div>
+                            ))}
+                            {borrowerDues.map(b => (
+                              <div key={b.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                <div>
+                                  <div style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--text-primary)' }}>{b.name} (Lent)</div>
+                                  <div style={{ fontSize: '0.68rem', color: 'var(--text-muted)' }}>Contact: {b.phone}</div>
+                                </div>
+                                <span style={{ fontSize: '0.8rem', fontWeight: 800, color: 'var(--green)' }}>{fmt(b.principal - b.repaid)}</span>
+                              </div>
+                            ))}
+                          </>
+                        );
+                      })()}
+                    </div>
+                  </div>
+
+                </div>
+
               </div>
+
             </div>
           )}
 
@@ -1105,11 +1234,7 @@ export default function App() {
                   </div>
                   <div className="form-group">
                     <label>Type</label>
-                    <select name="type" onChange={e => {
-                      setQuickType(e.target.value);
-                      const input = e.target.form.amount;
-                      input.style.color = e.target.value === 'income' ? 'var(--green)' : 'var(--red)';
-                    }}>
+                    <select name="type" onChange={e => setQuickType(e.target.value)}>
                       <option value="expense">Expense OUT</option>
                       <option value="income">Income IN</option>
                     </select>
@@ -1124,7 +1249,7 @@ export default function App() {
                   </div>
                   <div className="form-group full">
                     <label>Amount (₹)</label>
-                    <input name="amount" type="number" placeholder="0" min="1" required style={{ color: 'var(--red)', fontWeight: 'bold' }}/>
+                    <input name="amount" type="number" placeholder="0" min="1" required style={{ color: quickType === 'income' ? 'var(--green)' : 'var(--red)', fontWeight: 'bold' }}/>
                   </div>
                   <button type="submit" className="btn btn-primary" style={{ gridColumn: '1 / -1' }}>Save Log</button>
                 </form>
