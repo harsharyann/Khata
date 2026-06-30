@@ -713,10 +713,14 @@ export default function App() {
                 {/* Bank Cards */}
                 {banks.map((acc, idx) => (
                   <div key={acc.id} className="cred-card" style={{ position: 'relative', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', background: 'rgba(255, 255, 255, 0.7)' }}>
-                    <button className="btn-icon danger" style={{ position: 'absolute', top: 16, right: 16, zIndex: 10 }}
-                      onClick={() => { if (confirm(`Remove ${acc.bankName} account?`)) setBanks(p => p.filter(b => b.id !== acc.id)); }}>
-                      <Trash2 size={13}/>
-                    </button>
+                    <div style={{ position: 'absolute', top: 16, right: 16, zIndex: 10, display: 'flex', gap: 6 }}>
+                      <button className="btn-icon" style={{ background: 'rgba(255,255,255,0.8)' }} onClick={() => openModal('Edit Bank Account', 'bank', acc)}>
+                        <Edit3 size={13} color="var(--text-primary)"/>
+                      </button>
+                      <button className="btn-icon danger" onClick={() => { if (confirm(`Remove ${acc.bankName} account?`)) setBanks(p => p.filter(b => b.id !== acc.id)); }}>
+                        <Trash2 size={13}/>
+                      </button>
+                    </div>
                     <div>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>
                         <div style={{ background: 'var(--blue-bg)', padding: 10, borderRadius: 10 }}><Building size={20} color="var(--blue)"/></div>
@@ -763,10 +767,15 @@ export default function App() {
                   const util = card.limit > 0 ? ((card.outstanding / card.limit) * 100).toFixed(0) : 0;
                   return (
                     <div key={card.id} className={`metallic-card ${['gold', 'silver', 'platinum'][idx % 3]}`}>
-                      <button className="btn-icon danger" style={{ position: 'absolute', top: 12, right: 12, zIndex: 10, background: 'rgba(220,38,38,0.2)' }}
-                        onClick={() => { if (confirm(`Remove ${card.bankName} - ${card.cardName}?`)) setCreditCards(p => p.filter(c => c.id !== card.id)); }}>
-                        <Trash2 size={13} color="white"/>
-                      </button>
+                      <div style={{ position: 'absolute', top: 12, right: 12, zIndex: 10, display: 'flex', gap: 6 }}>
+                        <button className="btn-icon" style={{ background: 'rgba(255,255,255,0.2)' }} onClick={() => openModal('Edit Credit Card', 'card', card)}>
+                          <Edit3 size={13} color="white"/>
+                        </button>
+                        <button className="btn-icon danger" style={{ background: 'rgba(220,38,38,0.2)' }}
+                          onClick={() => { if (confirm(`Remove ${card.bankName} - ${card.cardName}?`)) setCreditCards(p => p.filter(c => c.id !== card.id)); }}>
+                          <Trash2 size={13} color="white"/>
+                        </button>
+                      </div>
 
                       <div style={{ zIndex: 1, position: 'relative' }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 14 }}>
@@ -847,6 +856,9 @@ export default function App() {
                       </div>
 
                       <div style={{ display: 'flex', gap: 8 }}>
+                        <button className="btn btn-ghost" style={{ height: '40px', padding: '0 16px', color: 'var(--text-primary)', border: '1px solid var(--border-strong)' }} onClick={() => openModal('Edit Borrower', 'borrower', bw)}>
+                          <Edit3 size={16}/>
+                        </button>
                         {!settled ? (
                           <>
                             <button className="btn btn-primary" style={{ height: '40px', padding: '0 20px', fontWeight: 700 }}
@@ -1041,17 +1053,21 @@ export default function App() {
                   const f = e.target;
                   const bankName = f.bankName.value, type = f.type.value, accountNumber = f.accountNumber.value, balance = parseFloat(f.balance.value) || 0;
                   if (bankName && accountNumber && balance >= 0) {
-                    setBanks(p => [...p, { id: Date.now(), bankName, type, accountNumber, balance }]);
+                    if (modal.item) {
+                      setBanks(p => p.map(b => b.id === modal.item.id ? { ...b, bankName, type, accountNumber, balance } : b));
+                    } else {
+                      setBanks(p => [...p, { id: Date.now(), bankName, type, accountNumber, balance }]);
+                    }
                     closeModal();
                   }
                 }}>
                   <div className="form-group">
                     <label>Bank Name</label>
-                    <input name="bankName" type="text" required placeholder="e.g. HDFC Bank"/>
+                    <input name="bankName" type="text" required placeholder="e.g. HDFC Bank" defaultValue={modal.item?.bankName || ''}/>
                   </div>
                   <div className="form-group">
                     <label>Account Type</label>
-                    <select name="type">
+                    <select name="type" defaultValue={modal.item?.type || 'Savings'}>
                       <option>Savings</option>
                       <option>Salary</option>
                       <option>Current</option>
@@ -1059,11 +1075,11 @@ export default function App() {
                   </div>
                   <div className="form-group">
                     <label>Last 4 Digits</label>
-                    <input name="accountNumber" type="text" maxLength="4" required placeholder="e.g. 5678"/>
+                    <input name="accountNumber" type="text" maxLength="4" required placeholder="e.g. 5678" defaultValue={modal.item?.accountNumber || ''}/>
                   </div>
                   <div className="form-group">
                     <label>Current Balance (₹)</label>
-                    <input name="balance" type="number" required placeholder="0" min="0"/>
+                    <input name="balance" type="number" required placeholder="0" min="0" defaultValue={modal.item?.balance || ''}/>
                   </div>
                   <button type="submit" className="btn btn-primary">Add Account</button>
                 </form>
@@ -1076,29 +1092,33 @@ export default function App() {
                   const f = e.target;
                   const bankName = f.bank.value, cardName = f.cardName.value, cardNumber = f.num.value, limit = parseFloat(f.limit.value) || 0, outstanding = parseFloat(f.outstanding.value) || 0;
                   if (bankName && cardName && cardNumber && limit > 0) {
-                    setCreditCards(p => [...p, { id: Date.now(), bankName, cardName, cardNumber, limit, outstanding }]);
+                    if (modal.item) {
+                      setCreditCards(p => p.map(c => c.id === modal.item.id ? { ...c, bankName, cardName, cardNumber, limit, outstanding } : c));
+                    } else {
+                      setCreditCards(p => [...p, { id: Date.now(), bankName, cardName, cardNumber, limit, outstanding }]);
+                    }
                     closeModal();
                   }
                 }}>
                   <div className="form-group">
                     <label>Bank / Issuer</label>
-                    <input name="bank" type="text" required placeholder="e.g. Axis Bank"/>
+                    <input name="bank" type="text" required placeholder="e.g. Axis Bank" defaultValue={modal.item?.bankName || ''}/>
                   </div>
                   <div className="form-group">
                     <label>Card Name</label>
-                    <input name="cardName" type="text" required placeholder="e.g. Flipkart Visa"/>
+                    <input name="cardName" type="text" required placeholder="e.g. Flipkart Visa" defaultValue={modal.item?.cardName || ''}/>
                   </div>
                   <div className="form-group">
                     <label>Last 4 Digits</label>
-                    <input name="num" type="text" maxLength="4" required placeholder="e.g. 1234"/>
+                    <input name="num" type="text" maxLength="4" required placeholder="e.g. 1234" defaultValue={modal.item?.cardNumber || ''}/>
                   </div>
                   <div className="form-group">
                     <label>Credit Limit (₹)</label>
-                    <input name="limit" type="number" required placeholder="0" min="1"/>
+                    <input name="limit" type="number" required placeholder="0" min="1" defaultValue={modal.item?.limit || ''}/>
                   </div>
                   <div className="form-group full">
                     <label>Outstanding Balance (₹)</label>
-                    <input name="outstanding" type="number" placeholder="0" min="0"/>
+                    <input name="outstanding" type="number" placeholder="0" min="0" defaultValue={modal.item?.outstanding || ''}/>
                   </div>
                   <button type="submit" className="btn btn-danger">Save Credit Card</button>
                 </form>
@@ -1111,21 +1131,25 @@ export default function App() {
                   const f = e.target;
                   const name = f.name.value, amount = parseFloat(f.amount.value) || 0, date = f.date.value;
                   if (name && amount > 0 && date) {
-                    setBorrowers(p => [...p, { id: Date.now(), name, principal: amount, repaid: 0, date }]);
+                    if (modal.item) {
+                      setBorrowers(p => p.map(b => b.id === modal.item.id ? { ...b, name, principal: amount, date } : b));
+                    } else {
+                      setBorrowers(p => [...p, { id: Date.now(), name, principal: amount, repaid: 0, date }]);
+                    }
                     closeModal();
                   }
                 }}>
                   <div className="form-group">
                     <label>Borrower Name</label>
-                    <input name="name" type="text" required placeholder="e.g. Rahul Kumar"/>
+                    <input name="name" type="text" required placeholder="e.g. Rahul Kumar" defaultValue={modal.item?.name || ''}/>
                   </div>
                   <div className="form-group">
                     <label>Amount Lent (₹)</label>
-                    <input name="amount" type="number" required placeholder="0" min="1"/>
+                    <input name="amount" type="number" required placeholder="0" min="1" defaultValue={modal.item?.principal || ''}/>
                   </div>
                   <div className="form-group full">
                     <label>Date Lent</label>
-                    <input name="date" type="date" required defaultValue={new Date().toISOString().split('T')[0]}/>
+                    <input name="date" type="date" required defaultValue={modal.item?.date || new Date().toISOString().split('T')[0]}/>
                   </div>
                   <button type="submit" className="btn btn-primary">Log Borrower</button>
                 </form>
