@@ -137,13 +137,13 @@ export default function App() {
   const trueNetWorth       = totalWealth + lentOut - ccDebt;
 
   const navItems = [
-    { id: 'dashboard',    label: 'Dashboard' },
     { id: 'home',         label: 'Home' },
     { id: 'cashflow',     label: 'Cashflow' },
     { id: 'accounts',     label: 'Wealth' },
     { id: 'borrowers',    label: 'Lent' },
     { id: 'credit-cards', label: 'Cards' },
     { id: 'samiti',       label: 'Samiti' },
+    { id: 'dashboard',    label: 'Dashboard' },
   ];
 
   // Chart Data Configurations
