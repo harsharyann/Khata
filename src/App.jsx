@@ -1254,10 +1254,7 @@ export default function App() {
                               <button className="btn-icon" title="Edit" onClick={() => openModal('Edit Income', 'income', item)}>
                                 <Edit3 size={13}/>
                               </button>
-                              <button className="btn-icon danger" title="Delete" onClick={() => {
-                                if(!window.confirm('Delete this income?')) return;
-                                setIncomes(p => p.filter(x => x.id !== item.id));
-                              }}>
+                              <button className="btn-icon danger" title="Delete" onClick={() => deleteIncome(item.id)}>
                                 <Trash2 size={13}/>
                               </button>
                             </div>
@@ -1294,10 +1291,7 @@ export default function App() {
                               <button className="btn-icon" title="Edit" onClick={() => openModal('Edit Expense', 'expenses', item)}>
                                 <Edit3 size={13}/>
                               </button>
-                              <button className="btn-icon danger" title="Delete" onClick={() => {
-                                if(!window.confirm('Delete this expense?')) return;
-                                setExpenses(p => p.filter(x => x.id !== item.id));
-                              }}>
+                              <button className="btn-icon danger" title="Delete" onClick={() => deleteExpense(item.id)}>
                                 <Trash2 size={13}/>
                               </button>
                             </div>
