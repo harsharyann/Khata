@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import {
   Home, PieChart, TrendingUp, TrendingDown, IndianRupee,
   Users, CreditCard, Target, Calendar, Plus, Trash2,
-  Edit3, Eye, CalendarCheck, ArrowRightLeft, X, Wallet,
+  Edit3, Eye, CalendarCheck, ArrowRightLeft, X, Wallet, Pin,
   Building, CheckCircle, AlertTriangle, ChevronLeft, ChevronRight,
   BarChart2, ArrowUpRight, ArrowDownRight, Menu, Loader, User
 } from 'lucide-react';
@@ -412,6 +412,22 @@ export default function App() {
       alert('Error deleting bank: ' + error.message);
     } else {
       setBanks(p => p.filter(x => x.id !== id));
+    }
+    setLoading(false);
+  };
+
+  const togglePinBank = async (id, currentPinState) => {
+    setLoading(true);
+    const newState = !currentPinState;
+    const { data, error } = await supabase
+      .from('banks')
+      .update({ is_pinned: newState })
+      .eq('id', id)
+      .select();
+    if (error) {
+      alert('Error pinning bank: ' + error.message);
+    } else if (data) {
+      setBanks(p => p.map(x => x.id === id ? data[0] : x));
     }
     setLoading(false);
   };
@@ -1463,7 +1479,7 @@ export default function App() {
                   </div>
 
                   {/* Bank Cards */}
-                  {banks.map((acc) => (
+                  {[...banks].sort((a, b) => (b.is_pinned ? 1 : 0) - (a.is_pinned ? 1 : 0)).map((acc) => (
                     <div 
                       key={acc.id} 
                       className="panel" 
@@ -1473,10 +1489,18 @@ export default function App() {
                         flexDirection: 'column', 
                         justifyContent: 'space-between', 
                         gap: '1.25rem', 
-                        borderTop: '4px solid var(--blue)' 
+                        borderTop: acc.is_pinned ? '4px solid var(--accent)' : '4px solid var(--blue)',
+                        position: 'relative'
                       }}
                     >
-                      <div>
+                      <button 
+                        onClick={() => togglePinBank(acc.id, acc.is_pinned)}
+                        style={{ position: 'absolute', top: '1rem', right: '1rem', background: 'transparent', border: 'none', cursor: 'pointer', color: acc.is_pinned ? 'var(--accent)' : 'var(--text-muted)' }}
+                        title={acc.is_pinned ? "Unpin this bank" : "Pin this bank to top"}
+                      >
+                        <Pin size={16} fill={acc.is_pinned ? 'var(--accent)' : 'transparent'} />
+                      </button>
+                      <div style={{ paddingRight: '2rem' }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 12 }}>
                           <div>
                             <h3 style={{ fontSize: '1.15rem', fontWeight: 800, color: 'var(--text-primary)', margin: 0 }}>{acc.bankName}</h3>
