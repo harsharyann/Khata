@@ -791,34 +791,10 @@ export default function App() {
         <p style={{ color: 'var(--text-secondary)', maxWidth: '480px', margin: '0.75rem auto 1.5rem', fontSize: '0.9rem', lineHeight: 1.5 }}>
           Supabase credentials are missing. If you have deployed to Vercel, please go to your <strong>Vercel Project Settings &rarr; Environment Variables</strong> and add:
         </p>
-        <div style={{ background: 'var(--bg-hover)', padding: '12px 16px', borderRadius: '8px', border: '1px solid var(--border)', display: 'inline-block', textAlign: 'left', fontFamily: 'monospace', fontSize: '0.78rem', color: 'var(--text-primary)', marginBottom: '1.5rem' }}>
-          <div>VITE_SUPABASE_URL</div>
-          <div style={{ marginBottom: '8px', color: 'var(--text-muted)' }}>https://otnxfohecczaberldjuy.supabase.co</div>
-          <div>VITE_SUPABASE_ANON_KEY</div>
-          <div style={{ color: 'var(--text-muted)' }}>your-supabase-anon-key</div>
-        </div>
-        <p style={{ color: 'var(--text-muted)', fontSize: '0.8rem' }}>After adding the variables, redeploy your project on Vercel.</p>
-      </div>
-    );
-  }
-
-  if (loading && incomes.length === 0 && banks.length === 0) {
-    return (
-      <div className="loader-container">
-        <div className="pulsing-orb">
-          <IndianRupee size={36} />
-        </div>
-        <span className="loader-text">Syncing with Supabase...</span>
-      </div>
-    );
-  }
-
-  if (!session) {
-    return (
-      <div className="login-container" style={{ position: 'relative', overflow: 'hidden' }}>
+        <div style={{ background: 'var(--bg-hov      <div className="login-container" style={{ position: 'relative', overflow: 'hidden', display: 'flex', flexDirection: 'column', height: '100vh', width: '100vw', padding: 0 }}>
         
         {/* FAKE DASHBOARD BACKGROUND */}
-        <div className="fake-dashboard" style={{ position: 'absolute', inset: 0, opacity: 0.4, pointerEvents: 'none', zIndex: 0, display: 'flex', flexDirection: 'column', gap: '2rem', padding: '3rem', filter: 'blur(10px)', WebkitFilter: 'blur(10px)' }}>
+        <div className="fake-dashboard" style={{ position: 'absolute', inset: 0, opacity: 0.15, pointerEvents: 'none', zIndex: 0, display: 'flex', flexDirection: 'column', gap: '2rem', padding: '3rem', filter: 'blur(8px)', WebkitFilter: 'blur(8px)' }}>
           <div style={{ display: 'flex', gap: '2rem' }}>
              <div style={{ width: '30%', height: '150px', background: 'var(--bg-card)', borderRadius: '24px', border: '1px solid var(--border)' }}></div>
              <div style={{ width: '30%', height: '150px', background: 'var(--bg-card)', borderRadius: '24px', border: '1px solid var(--border)' }}></div>
@@ -831,62 +807,57 @@ export default function App() {
         </div>
 
         {/* DARK OVERLAY */}
-        <div style={{ position: 'absolute', inset: 0, zIndex: 1, background: 'rgba(11, 17, 33, 0.5)' }}></div>
+        <div style={{ position: 'absolute', inset: 0, zIndex: 1, background: 'rgba(11, 17, 33, 0.7)' }}></div>
 
-        <div className="login-card" style={{ zIndex: 2, position: 'relative', maxWidth: '360px', padding: '2rem', margin: '0 auto', transform: 'translateY(-5vh)', border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(15, 23, 42, 0.65)', backdropFilter: 'blur(40px)', WebkitBackdropFilter: 'blur(40px)', boxShadow: '0 30px 60px rgba(0,0,0,0.5)' }}>
-          <div className="auth-header" style={{ display: 'flex', flexDirection: 'column', gap: '0.2rem' }}>
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', padding: '10px 0' }}>
-              <div style={{ fontFamily: '"Caveat", cursive', fontSize: '3.2rem', fontWeight: 700, color: 'var(--accent)', letterSpacing: '1px', transform: 'rotate(-5deg)', whiteSpace: 'nowrap', textShadow: '0 4px 15px rgba(79, 70, 229, 0.4)' }}>
+        {/* TOP LOGIN NAVBAR */}
+        <div style={{ position: 'relative', zIndex: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '1.5rem 3rem', background: 'rgba(15, 23, 42, 0.2)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)', borderBottom: '1px solid rgba(255,255,255,0.03)', flexWrap: 'wrap', gap: '1rem' }}>
+           <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+              <div style={{ fontFamily: '"Caveat", cursive', fontSize: '2.5rem', fontWeight: 700, color: 'var(--accent)', letterSpacing: '1px', transform: 'rotate(-5deg)', textShadow: '0 4px 15px rgba(79, 70, 229, 0.4)' }}>
                 Harsh Aryan
               </div>
-              <div style={{ fontSize: '0.9rem', textAlign: 'center', opacity: 0.8, fontStyle: 'italic', lineHeight: 1.4, color: 'var(--text-secondary)' }}>
-                "Designing logic,<br/>coding aesthetics."
-              </div>
-            </div>
-            <div style={{ borderBottom: '1px solid rgba(255,255,255,0.08)', paddingBottom: '0.75rem', marginBottom: '0.25rem' }}>
-              <div style={{ fontSize: '0.92rem', fontWeight: 800, color: 'var(--green)', letterSpacing: '0.3px' }}>
-                Welcome, Shailesh Kumar Nirala
-              </div>
-              <div style={{ fontSize: '0.82rem', fontWeight: 600, color: 'var(--text-secondary)', marginTop: '3px' }}>
-                आपका स्वागत है, शैलेश कुमार निराला
-              </div>
-            </div>
-            <p style={{ fontSize: '0.82rem', color: 'var(--text-muted)' }}>
-              {isSignUp ? 'Create your secure cloud account' : 'Sign in to access your dashboard'}
-            </p>
-          </div>
-          <form className="auth-form" onSubmit={handleAuth} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-            <div className="form-group full" style={{ textAlign: 'left' }}>
-              <label style={{ fontSize: '0.72rem', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '6px', display: 'block', fontWeight: 700 }}>Email Address</label>
+           </div>
+           
+           <form onSubmit={handleAuth} style={{ display: 'flex', gap: '10px', alignItems: 'center', flexWrap: 'wrap' }}>
               <input 
                 type="email" 
-                required 
-                placeholder="your@email.com" 
+                placeholder="Email Address" 
                 value={authEmail} 
                 onChange={e => setAuthEmail(e.target.value)} 
-                className="glass-input"
+                required 
+                className="glass-input" 
+                style={{ width: '220px', height: '40px', padding: '0 16px', background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.1)' }} 
               />
-            </div>
-            <div className="form-group full" style={{ textAlign: 'left' }}>
-              <label style={{ fontSize: '0.72rem', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '6px', display: 'block', fontWeight: 700 }}>Password</label>
               <input 
                 type="password" 
-                required 
-                placeholder="••••••••" 
+                placeholder="Password" 
                 value={authPassword} 
                 onChange={e => setAuthPassword(e.target.value)} 
-                className="glass-input"
+                required 
+                className="glass-input" 
+                style={{ width: '220px', height: '40px', padding: '0 16px', background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.1)' }} 
               />
-            </div>
-            {authError && <div style={{ color: 'var(--red)', fontSize: '0.85rem', fontWeight: 700, textAlign: 'center', background: 'var(--red-bg)', padding: '8px', borderRadius: '8px' }}>{authError}</div>}
-            <button type="submit" className="glass-btn" style={{ marginTop: '0.5rem' }}>
-              {isSignUp ? 'Sign Up Securely' : 'Sign In'}
-            </button>
-          </form>
-          <div className="auth-toggle" onClick={() => setIsSignUp(!isSignUp)} style={{ color: 'var(--text-secondary)', cursor: 'pointer', fontSize: '0.85rem', marginTop: '0.5rem', transition: 'color 0.2s' }} onMouseEnter={e => e.target.style.color = 'var(--text-primary)'} onMouseLeave={e => e.target.style.color = 'var(--text-secondary)'}>
-            {isSignUp ? 'Already have an account? ' : "Don't have an account? "}
-            <strong style={{ color: 'var(--blue)' }}>{isSignUp ? 'Sign In' : 'Sign Up'}</strong>
-          </div>
+              <button type="submit" className="glass-btn" style={{ height: '40px', padding: '0 2rem', whiteSpace: 'nowrap' }}>
+                {isSignUp ? 'Sign Up' : 'Sign In'}
+              </button>
+              <div onClick={() => setIsSignUp(!isSignUp)} style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', cursor: 'pointer', marginLeft: '0.5rem', fontWeight: 600 }}>
+                 {isSignUp ? 'Login instead' : 'Create account'}
+              </div>
+           </form>
+        </div>
+
+        {/* HERO SECTION */}
+        <div style={{ position: 'relative', zIndex: 2, flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', textAlign: 'center', padding: '2rem' }}>
+           <h1 style={{ fontSize: 'clamp(2.5rem, 5vw, 4.5rem)', fontWeight: 900, background: 'linear-gradient(135deg, #fff 0%, var(--text-muted) 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', letterSpacing: '-1px', marginBottom: '1.5rem', lineHeight: 1.1 }}>
+             Finance Buddy <br/><span style={{ fontSize: '0.5em', fontWeight: 500, color: 'var(--accent)', letterSpacing: '2px', textTransform: 'uppercase' }}>Next-Gen Finance</span>
+           </h1>
+           <p style={{ fontSize: '1.1rem', color: 'var(--text-secondary)', maxWidth: '600px', lineHeight: 1.6, fontStyle: 'italic', opacity: 0.8 }}>
+             "Designing logic, coding aesthetics."
+           </p>
+           {authError && (
+             <div style={{ color: 'var(--red)', marginTop: '2.5rem', padding: '12px 24px', background: 'var(--red-bg)', borderRadius: '12px', border: '1px solid rgba(239, 68, 68, 0.2)', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '8px' }}>
+               <AlertTriangle size={18} /> {authError}
+             </div>
+           )}
         </div>
       </div>
     );
