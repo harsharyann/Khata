@@ -4,7 +4,7 @@ import {
   Users, CreditCard, Target, Calendar, Plus, Trash2,
   Edit3, Eye, CalendarCheck, ArrowRightLeft, X, Wallet,
   Building, CheckCircle, AlertTriangle, ChevronLeft, ChevronRight,
-  BarChart2, ArrowUpRight, ArrowDownRight, Menu, Loader
+  BarChart2, ArrowUpRight, ArrowDownRight, Menu, Loader, User
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import CountUp from 'react-countup';
@@ -136,6 +136,133 @@ const SamitiMonthGrid = ({ samiti, payments, togglePayment }) => {
             <span style={{ fontSize: '0.65rem', fontWeight: 700 }}>{label}</span>
           </button>
         ))}
+      </div>
+    </div>
+  );
+};
+
+// ─────────────────────────────────────────────
+//   PERSONAL VIEW COMPONENT
+// ─────────────────────────────────────────────
+const PersonalView = () => {
+  const [emiLoan, setEmiLoan] = useState(() => localStorage.getItem('emiLoan') || '');
+  const [emiRate, setEmiRate] = useState(() => localStorage.getItem('emiRate') || '');
+  const [emiTenure, setEmiTenure] = useState(() => localStorage.getItem('emiTenure') || '');
+
+  const [fundTotal, setFundTotal] = useState(() => localStorage.getItem('fundTotal') || '');
+  const [fundUsed, setFundUsed] = useState(() => localStorage.getItem('fundUsed') || '');
+
+  useEffect(() => { localStorage.setItem('emiLoan', emiLoan); }, [emiLoan]);
+  useEffect(() => { localStorage.setItem('emiRate', emiRate); }, [emiRate]);
+  useEffect(() => { localStorage.setItem('emiTenure', emiTenure); }, [emiTenure]);
+  useEffect(() => { localStorage.setItem('fundTotal', fundTotal); }, [fundTotal]);
+  useEffect(() => { localStorage.setItem('fundUsed', fundUsed); }, [fundUsed]);
+
+  const P = parseFloat(emiLoan) || 0;
+  const R = (parseFloat(emiRate) || 0) / 12 / 100;
+  const N = parseFloat(emiTenure) || 0;
+  
+  let emi = 0;
+  let totalPayable = 0;
+  let totalInterest = 0;
+  
+  if (P > 0 && R > 0 && N > 0) {
+    emi = P * R * (Math.pow(1 + R, N) / (Math.pow(1 + R, N) - 1));
+    totalPayable = emi * N;
+    totalInterest = totalPayable - P;
+  } else if (P > 0 && N > 0) {
+    emi = P / N; 
+    totalPayable = P;
+  }
+
+  const fT = parseFloat(fundTotal) || 0;
+  const fU = parseFloat(fundUsed) || 0;
+  const fRem = Math.max(0, fT - fU);
+  const fPct = fT > 0 ? Math.min(100, (fU / fT) * 100) : 0;
+
+  return (
+    <div className="dashboard-content" style={{ padding: '2rem' }}>
+      <div className="page-header" style={{ marginBottom: '2rem', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+        <div>
+          <span className="eyebrow" style={{ color: 'var(--accent)', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '1px', fontSize: '0.75rem' }}>Isolated Space</span>
+          <h1 style={{ fontSize: '2rem', fontWeight: 900, letterSpacing: '-0.5px' }}>Personal Hub</h1>
+        </div>
+        <div style={{ color: 'var(--text-muted)', fontSize: '0.85rem', maxWidth: '300px', textAlign: 'right', lineHeight: 1.4 }}>
+          This data is stored locally on your browser. It doesn't sync with the cloud or main dashboard.
+        </div>
+      </div>
+
+      <div className="bento-grid">
+        <div className="cred-card bento-col-6" style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem', minHeight: '380px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <div style={{ background: 'var(--accent-soft)', color: 'var(--accent)', padding: '10px', borderRadius: '12px' }}><PieChart size={20} /></div>
+            <h3 style={{ fontSize: '1.2rem', fontWeight: 800 }}>EMI Calculator</h3>
+          </div>
+          
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', flex: 1 }}>
+            <div className="form-group full">
+              <label>Loan Amount (₹)</label>
+              <input type="number" placeholder="e.g. 500000" className="glass-input" value={emiLoan} onChange={e => setEmiLoan(e.target.value)} />
+            </div>
+            <div style={{ display: 'flex', gap: '1rem' }}>
+              <div className="form-group" style={{ flex: 1 }}>
+                <label>Interest Rate (% p.a.)</label>
+                <input type="number" step="0.1" placeholder="e.g. 10.5" className="glass-input" value={emiRate} onChange={e => setEmiRate(e.target.value)} />
+              </div>
+              <div className="form-group" style={{ flex: 1 }}>
+                <label>Tenure (Months)</label>
+                <input type="number" placeholder="e.g. 24" className="glass-input" value={emiTenure} onChange={e => setEmiTenure(e.target.value)} />
+              </div>
+            </div>
+          </div>
+
+          <div style={{ background: 'var(--bg-hover)', padding: '1.5rem', borderRadius: '16px', border: '1px solid var(--border)', marginTop: '1rem' }}>
+            <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.5px' }}>Monthly EMI</div>
+            <div style={{ fontSize: '2.5rem', fontWeight: 900, color: 'var(--accent)', margin: '0.25rem 0 1rem' }}>₹{Math.round(emi).toLocaleString('en-IN')}</div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', borderTop: '1px solid var(--border-strong)', paddingTop: '1rem' }}>
+              <div>
+                <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Total Interest</div>
+                <div style={{ fontSize: '1rem', fontWeight: 700, color: 'var(--text-primary)' }}>₹{Math.round(totalInterest).toLocaleString('en-IN')}</div>
+              </div>
+              <div style={{ textAlign: 'right' }}>
+                <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Total Payable</div>
+                <div style={{ fontSize: '1rem', fontWeight: 700, color: 'var(--text-primary)' }}>₹{Math.round(totalPayable).toLocaleString('en-IN')}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="cred-card bento-col-6" style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem', minHeight: '380px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <div style={{ background: 'var(--green-bg)', color: 'var(--green)', padding: '10px', borderRadius: '12px' }}><Wallet size={20} /></div>
+            <h3 style={{ fontSize: '1.2rem', fontWeight: 800 }}>Personal Fund Tracker</h3>
+          </div>
+
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', flex: 1 }}>
+            <div className="form-group full">
+              <label>Total Fund Amount (₹)</label>
+              <input type="number" placeholder="e.g. 100000" className="glass-input" value={fundTotal} onChange={e => setFundTotal(e.target.value)} />
+            </div>
+            <div className="form-group full">
+              <label>Amount Used So Far (₹)</label>
+              <input type="number" placeholder="e.g. 25000" className="glass-input" value={fundUsed} onChange={e => setFundUsed(e.target.value)} />
+            </div>
+          </div>
+
+          <div style={{ background: 'var(--bg-hover)', padding: '1.5rem', borderRadius: '16px', border: '1px solid var(--border)', marginTop: '1rem' }}>
+            <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.5px' }}>Remaining Balance</div>
+            <div style={{ fontSize: '2.5rem', fontWeight: 900, color: 'var(--green)', margin: '0.25rem 0 1rem' }}>₹{Math.round(fRem).toLocaleString('en-IN')}</div>
+            
+            <div style={{ position: 'relative', height: '12px', background: 'var(--bg-base)', borderRadius: '99px', overflow: 'hidden', border: '1px solid var(--border)' }}>
+              <div style={{ position: 'absolute', top: 0, left: 0, height: '100%', width: `${fPct}%`, background: fPct > 80 ? 'var(--red)' : (fPct > 50 ? 'var(--yellow)' : 'var(--green)'), transition: 'width 0.5s ease-out' }}></div>
+            </div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '8px', fontSize: '0.75rem', fontWeight: 600 }}>
+              <span style={{ color: 'var(--text-muted)' }}>0%</span>
+              <span style={{ color: 'var(--text-secondary)' }}>{fPct.toFixed(1)}% Used</span>
+              <span style={{ color: 'var(--text-muted)' }}>100%</span>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );
@@ -662,6 +789,7 @@ export default function App() {
     { id: 'borrowers',    label: 'Lent',      short: 'Lent',   icon: <Users size={18}/> },
     { id: 'credit-cards', label: 'Cards',     short: 'Cards',  icon: <CreditCard size={18}/> },
     { id: 'samiti',       label: 'Samiti',    short: 'Samiti', icon: <Target size={18}/> },
+    { id: 'personal',     label: 'Personal',  short: 'Self',   icon: <User size={18}/> },
     { id: 'dashboard',    label: 'Dashboard', short: 'Stats',  icon: <BarChart2 size={18}/> },
   ];
 
@@ -1075,6 +1203,10 @@ export default function App() {
 
 
           {/* ══ DASHBOARD ══ */}
+          {view === 'personal' && (
+            <PersonalView />
+          )}
+
           {view === 'dashboard' && (
             <div className="fade-in-view">
               <div className="page-header" style={{ marginBottom: '2rem' }}>
