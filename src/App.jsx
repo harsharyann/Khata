@@ -835,10 +835,9 @@ export default function App() {
 
         {/* TOP LOGIN NAVBAR */}
         <div style={{ position: 'relative', zIndex: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '1.5rem 3rem', background: 'rgba(15, 23, 42, 0.2)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)', borderBottom: '1px solid rgba(255,255,255,0.03)', flexWrap: 'wrap', gap: '1rem' }}>
-           <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-              <div style={{ fontFamily: '"Caveat", cursive', fontSize: '2.5rem', fontWeight: 700, color: 'var(--accent)', letterSpacing: '1px', transform: 'rotate(-5deg)', textShadow: '0 4px 15px rgba(79, 70, 229, 0.4)' }}>
-                Harsh Aryan
-              </div>
+           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <span style={{ fontSize: '1.8rem', filter: 'drop-shadow(0 0 10px rgba(56, 189, 248, 0.4))' }}>💎</span>
+              <span style={{ fontSize: '1.4rem', fontWeight: 900, background: 'linear-gradient(135deg, #fff 0%, var(--blue) 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', letterSpacing: '-0.5px' }}>FinBuddy</span>
            </div>
            
            <form onSubmit={handleAuth} style={{ display: 'flex', gap: '10px', alignItems: 'center', flexWrap: 'wrap' }}>
@@ -861,11 +860,8 @@ export default function App() {
                 style={{ width: '220px', height: '40px', padding: '0 16px', background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.1)' }} 
               />
               <button type="submit" className="glass-btn" style={{ height: '40px', padding: '0 2rem', whiteSpace: 'nowrap' }}>
-                {isSignUp ? 'Sign Up' : 'Sign In'}
+                Sign In
               </button>
-              <div onClick={() => setIsSignUp(!isSignUp)} style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', cursor: 'pointer', marginLeft: '0.5rem', fontWeight: 600 }}>
-                 {isSignUp ? 'Login instead' : 'Create account'}
-              </div>
            </form>
         </div>
 
