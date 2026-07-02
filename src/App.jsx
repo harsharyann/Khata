@@ -222,27 +222,46 @@ const PersonalView = () => {
       </div>
 
       <div className="bento-grid">
-        <div className="cred-card bento-col-6" style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem', minHeight: '380px' }}>
+        <div className="cred-card bento-col-12" style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem', minHeight: '380px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
             <div style={{ background: 'var(--accent-soft)', color: 'var(--accent)', padding: '10px', borderRadius: '12px' }}><PieChart size={20} /></div>
             <h3 style={{ fontSize: '1.2rem', fontWeight: 800 }}>Active EMI Tracker</h3>
           </div>
           
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-            <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
-              <input type="text" placeholder="EMI Name (e.g. iPhone)" className="glass-input" style={{ flex: 1, minWidth: '120px' }} value={newEmiName} onChange={e => setNewEmiName(e.target.value)} />
-              <input type="number" placeholder="₹ Amt/mo" className="glass-input" style={{ width: '120px' }} value={newEmiAmt} onChange={e => setNewEmiAmt(e.target.value)} />
-              <input type="number" placeholder="Total Mo" className="glass-input" style={{ width: '90px' }} value={newEmiTotal} onChange={e => setNewEmiTotal(e.target.value)} />
-              <input type="number" placeholder="Paid Mo" className="glass-input" style={{ width: '90px' }} value={newEmiPaid} onChange={e => setNewEmiPaid(e.target.value)} />
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', background: 'var(--bg-hover)', padding: '1.5rem', borderRadius: '16px', border: '1px solid var(--border)' }}>
+            <h4 style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', marginBottom: '0.5rem', fontWeight: 600 }}>Add New EMI</h4>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '1rem' }}>
+              <div className="form-group">
+                <label>EMI Name</label>
+                <input type="text" placeholder="e.g. Home Loan" className="glass-input" value={newEmiName} onChange={e => setNewEmiName(e.target.value)} />
+              </div>
+              <div className="form-group">
+                <label>Monthly EMI (₹)</label>
+                <input type="number" placeholder="e.g. 15000" className="glass-input" value={newEmiAmt} onChange={e => setNewEmiAmt(e.target.value)} />
+              </div>
+              <div className="form-group">
+                <label>Total Tenure (Months)</label>
+                <input type="number" placeholder="e.g. 60" className="glass-input" value={newEmiTotal} onChange={e => setNewEmiTotal(e.target.value)} />
+              </div>
+              <div className="form-group">
+                <label>Paid Months</label>
+                <input type="number" placeholder="e.g. 12" className="glass-input" value={newEmiPaid} onChange={e => setNewEmiPaid(e.target.value)} />
+              </div>
+              <div className="form-group">
+                <label>Start Date</label>
+                <input type="date" className="glass-input" value={newEmiStart} onChange={e => setNewEmiStart(e.target.value)} />
+              </div>
+              <div className="form-group">
+                <label>Due Date (Day)</label>
+                <input type="number" placeholder="e.g. 5" className="glass-input" value={newEmiDue} onChange={e => setNewEmiDue(e.target.value)} />
+              </div>
             </div>
-            <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
-              <input type="date" title="Start Date" className="glass-input" style={{ flex: 1 }} value={newEmiStart} onChange={e => setNewEmiStart(e.target.value)} />
-              <input type="number" placeholder="Due Date (e.g. 5)" title="Day of the month" className="glass-input" style={{ width: '150px' }} value={newEmiDue} onChange={e => setNewEmiDue(e.target.value)} />
-              <button className="glass-btn" style={{ padding: '0 2rem' }} onClick={handleAddEmi}><Plus size={18} /> Add EMI</button>
-            </div>
+            <button className="glass-btn" style={{ padding: '0 2rem', marginTop: '0.5rem', width: 'fit-content', alignSelf: 'flex-start' }} onClick={handleAddEmi}>
+              <Plus size={18} /> Add EMI
+            </button>
           </div>
 
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', marginTop: '1rem', maxHeight: '500px', overflowY: 'auto', paddingRight: '10px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '1.5rem', marginTop: '1rem', maxHeight: '500px', overflowY: 'auto', paddingRight: '10px' }}>
             {emis.length === 0 ? (
               <div style={{ textAlign: 'center', color: 'var(--text-muted)', fontSize: '0.9rem', padding: '2rem 0' }}>No active EMIs tracked.</div>
             ) : emis.map(e => {
@@ -308,7 +327,7 @@ const PersonalView = () => {
           </div>
         </div>
 
-        <div className="cred-card bento-col-6" style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem', minHeight: '380px' }}>
+        <div className="cred-card bento-col-12" style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem', minHeight: '380px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
             <div style={{ background: 'var(--green-bg)', color: 'var(--green)', padding: '10px', borderRadius: '12px' }}><Wallet size={20} /></div>
             <h3 style={{ fontSize: '1.2rem', fontWeight: 800 }}>Personal Fund Tracker</h3>
