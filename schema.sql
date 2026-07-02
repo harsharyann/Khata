@@ -155,3 +155,32 @@ CREATE POLICY "Users can manage their own samiti payments"
     ON samiti_payments FOR ALL 
     USING (auth.uid() = user_id);
 
+-- 9. Add Attachment URLs to Incomes and Expenses
+ALTER TABLE expenses ADD COLUMN IF NOT EXISTS attachment_url TEXT;
+ALTER TABLE incomes ADD COLUMN IF NOT EXISTS attachment_url TEXT;
+
+-- 10. Create Storage Bucket for Receipts/Attachments
+INSERT INTO storage.buckets (id, name, public) 
+VALUES ('receipts', 'receipts', true)
+ON CONFLICT (id) DO NOTHING;
+
+-- 11. Storage Policies for 'receipts' bucket
+CREATE POLICY "Users can upload their own receipts"
+ON storage.objects FOR INSERT
+TO authenticated
+WITH CHECK ( bucket_id = 'receipts' AND auth.uid() = owner );
+
+CREATE POLICY "Anyone can view receipts"
+ON storage.objects FOR SELECT
+TO public
+USING ( bucket_id = 'receipts' );
+
+CREATE POLICY "Users can update their own receipts"
+ON storage.objects FOR UPDATE
+TO authenticated
+USING ( bucket_id = 'receipts' AND auth.uid() = owner );
+
+CREATE POLICY "Users can delete their own receipts"
+ON storage.objects FOR DELETE
+TO authenticated
+USING ( bucket_id = 'receipts' AND auth.uid() = owner );
