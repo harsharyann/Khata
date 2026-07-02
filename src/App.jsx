@@ -737,19 +737,19 @@ export default function App() {
   const chartOpts = {
     responsive: true, maintainAspectRatio: false,
     plugins: {
-      legend: { labels: { color: '#4B5563', font: { family: 'Inter', size: 11, weight: '600' } } },
-      tooltip: { backgroundColor: '#FFFFFF', borderColor: '#E5E7EB', borderWidth: 1, titleColor: '#111827', bodyColor: '#4B5563', boxShadow: '0 4px 20px rgba(0,0,0,0.1)' }
+      legend: { labels: { color: '#94A3B8', font: { family: 'Inter', size: 11, weight: '600' } } },
+      tooltip: { backgroundColor: 'rgba(15, 23, 42, 0.95)', borderColor: 'rgba(255,255,255,0.1)', borderWidth: 1, titleColor: '#F8FAFC', bodyColor: '#CBD5E1', boxShadow: '0 4px 20px rgba(0,0,0,0.5)' }
     },
     scales: {
-      x: { grid: { color: 'rgba(0,0,0,0.05)' }, ticks: { color: '#4B5563', font: { size: 10 } } },
-      y: { grid: { color: 'rgba(0,0,0,0.05)' }, ticks: { color: '#4B5563', font: { size: 10 } } },
+      x: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#94A3B8', font: { size: 10 } } },
+      y: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#94A3B8', font: { size: 10 } } },
     },
   };
   const doughnutOpts = {
     responsive: true, maintainAspectRatio: false,
     plugins: {
-      legend: { position: 'right', labels: { color: '#4B5563', font: { family: 'Inter', size: 11, weight: '600' } } },
-      tooltip: { backgroundColor: '#FFFFFF', borderColor: '#E5E7EB', borderWidth: 1, titleColor: '#111827', bodyColor: '#4B5563', boxShadow: '0 4px 20px rgba(0,0,0,0.1)' }
+      legend: { position: 'right', labels: { color: '#94A3B8', font: { family: 'Inter', size: 11, weight: '600' } } },
+      tooltip: { backgroundColor: 'rgba(15, 23, 42, 0.95)', borderColor: 'rgba(255,255,255,0.1)', borderWidth: 1, titleColor: '#F8FAFC', bodyColor: '#CBD5E1', boxShadow: '0 4px 20px rgba(0,0,0,0.5)' }
     }
   };
 
@@ -814,66 +814,64 @@ export default function App() {
 
   if (!session) {
     return (
-      <div className="auth-container">
-        {/* Animated Background Bubbles */}
-        <ul className="auth-bg-bubbles">
+      <div className="login-container">
+        {/* Animated Background Bubbles preserved for atmosphere */}
+        <ul className="auth-bg-bubbles" style={{ zIndex: 1 }}>
           <li></li><li></li><li></li><li></li><li></li>
           <li></li><li></li><li></li><li></li><li></li>
         </ul>
 
-        <div className="auth-card">
+        <div className="login-card">
           <div className="auth-header" style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
             <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '0.25rem' }}>
-              <span style={{ fontSize: '2.5rem', filter: 'drop-shadow(0 0 10px rgba(79, 70, 229, 0.4))' }}>💼</span>
+              <span style={{ fontSize: '3rem', filter: 'drop-shadow(0 0 15px rgba(56, 189, 248, 0.4))' }}>💎</span>
             </div>
-            <h2 style={{ fontSize: '1.45rem', background: 'linear-gradient(135deg, #fff 30%, var(--text-muted) 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', fontWeight: 800 }}>
+            <h2 style={{ fontSize: '1.6rem', background: 'linear-gradient(135deg, var(--text-primary) 0%, var(--blue) 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', fontWeight: 900, letterSpacing: '-0.5px' }}>
               Finance Buddy
             </h2>
             <div style={{ borderBottom: '1px solid rgba(255,255,255,0.08)', paddingBottom: '0.75rem', marginBottom: '0.25rem' }}>
               <div style={{ fontSize: '0.92rem', fontWeight: 800, color: 'var(--green)', letterSpacing: '0.3px' }}>
                 Welcome, Shailesh Kumar Nirala
               </div>
-              <div style={{ fontSize: '0.82rem', fontWeight: 600, color: 'var(--text-muted)', marginTop: '3px' }}>
+              <div style={{ fontSize: '0.82rem', fontWeight: 600, color: 'var(--text-secondary)', marginTop: '3px' }}>
                 आपका स्वागत है, शैलेश कुमार निराला
               </div>
             </div>
-            <p style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>
-              {isSignUp ? 'Create your cloud account' : 'Sign in to sync your data'}
+            <p style={{ fontSize: '0.82rem', color: 'var(--text-muted)' }}>
+              {isSignUp ? 'Create your secure cloud account' : 'Sign in to access your dashboard'}
             </p>
           </div>
-          <form className="auth-form" onSubmit={handleAuth}>
-            <div className="form-group full">
-              <label style={{ fontSize: '0.72rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Email Address</label>
+          <form className="auth-form" onSubmit={handleAuth} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+            <div className="form-group full" style={{ textAlign: 'left' }}>
+              <label style={{ fontSize: '0.72rem', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '6px', display: 'block', fontWeight: 700 }}>Email Address</label>
               <input 
                 type="email" 
                 required 
                 placeholder="your@email.com" 
                 value={authEmail} 
                 onChange={e => setAuthEmail(e.target.value)} 
-                className="cred-input"
-                style={{ background: 'rgba(255,255,255,0.04)', color: '#fff', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', padding: '10px 14px', fontSize: '0.85rem' }}
+                className="glass-input"
               />
             </div>
-            <div className="form-group full">
-              <label style={{ fontSize: '0.72rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Password</label>
+            <div className="form-group full" style={{ textAlign: 'left' }}>
+              <label style={{ fontSize: '0.72rem', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '6px', display: 'block', fontWeight: 700 }}>Password</label>
               <input 
                 type="password" 
                 required 
                 placeholder="••••••••" 
                 value={authPassword} 
                 onChange={e => setAuthPassword(e.target.value)} 
-                className="cred-input"
-                style={{ background: 'rgba(255,255,255,0.04)', color: '#fff', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', padding: '10px 14px', fontSize: '0.85rem' }}
+                className="glass-input"
               />
             </div>
-            {authError && <div style={{ color: 'var(--red)', fontSize: '0.8rem', fontWeight: 700, textAlign: 'center' }}>{authError}</div>}
-            <button type="submit" className="btn btn-primary" style={{ width: '100%', height: 42, justifyContent: 'center', fontWeight: 800, borderRadius: '8px', fontSize: '0.88rem' }}>
-              {isSignUp ? 'Sign Up' : 'Sign In'}
+            {authError && <div style={{ color: 'var(--red)', fontSize: '0.85rem', fontWeight: 700, textAlign: 'center', background: 'var(--red-bg)', padding: '8px', borderRadius: '8px' }}>{authError}</div>}
+            <button type="submit" className="glass-btn" style={{ marginTop: '0.5rem' }}>
+              {isSignUp ? 'Sign Up Securely' : 'Sign In'}
             </button>
           </form>
-          <div className="auth-toggle" onClick={() => setIsSignUp(!isSignUp)}>
+          <div className="auth-toggle" onClick={() => setIsSignUp(!isSignUp)} style={{ color: 'var(--text-secondary)', cursor: 'pointer', fontSize: '0.85rem', marginTop: '0.5rem', transition: 'color 0.2s' }} onMouseEnter={e => e.target.style.color = 'var(--text-primary)'} onMouseLeave={e => e.target.style.color = 'var(--text-secondary)'}>
             {isSignUp ? 'Already have an account? ' : "Don't have an account? "}
-            <strong>{isSignUp ? 'Sign In' : 'Sign Up'}</strong>
+            <strong style={{ color: 'var(--blue)' }}>{isSignUp ? 'Sign In' : 'Sign Up'}</strong>
           </div>
         </div>
       </div>
