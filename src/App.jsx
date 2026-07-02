@@ -57,6 +57,22 @@ const DUMMY_BORROWERS = [
 const fmt = (n) => '₹' + Number(n).toLocaleString('en-IN');
 const fmtDate = (s) => new Date(s).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
 
+// Returns actual total days across all tenure months starting from startDateStr
+const calcActualDays = (startDateStr, tenureMonths) => {
+  if (!startDateStr || !tenureMonths) return 0;
+  const s = new Date(startDateStr);
+  let total = 0;
+  for (let i = 0; i < tenureMonths; i++) {
+    total += new Date(s.getFullYear(), s.getMonth() + i + 1, 0).getDate();
+  }
+  return total;
+};
+// Returns actual days in a given YYYY-MM-01 payment_date month
+const daysInPaymentMonth = (dateStr) => {
+  const d = new Date(dateStr);
+  return new Date(d.getFullYear(), d.getMonth() + 1, 0).getDate();
+};
+
 // ─────────────────────────────────────────────
 //   SAMITI MONTH GRID COMPONENT
 // ─────────────────────────────────────────────
@@ -1731,16 +1747,14 @@ export default function App() {
                   
                   const sPayments = samitiPayments.filter(p => p.samiti_id === samiti.id);
                   const currentMonthYearStr = new Date().toISOString().slice(0, 7);
-                  const paidThisMonthCount = sPayments.filter(p => p.payment_date.startsWith(currentMonthYearStr)).length;
-                  const paidThisMonth = paidThisMonthCount * samiti.daily_amount;
-                  const totalPaid = sPayments.length * samiti.daily_amount;
+                  const now = new Date();
+                  const daysThisMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
+                  
+                  const paidThisMonthPayment = sPayments.find(p => p.payment_date.startsWith(currentMonthYearStr));
+                  const paidThisMonth = paidThisMonthPayment ? samiti.daily_amount * daysThisMonth : 0;
+                  
+                  const totalPaid = sPayments.reduce((sum, p) => sum + samiti.daily_amount * daysInPaymentMonth(p.payment_date), 0);
                   const progressPct = samiti.maturity_amount > 0 ? Math.min(100, (totalPaid / samiti.maturity_amount) * 100) : 0;
-
-                  const last7Days = Array.from({length: 7}, (_, i) => {
-                    const d = new Date();
-                    d.setDate(d.getDate() - (6 - i));
-                    return d.toISOString().split('T')[0];
-                  });
 
                   return (
                     <div key={samiti.id} className="item-card" style={{ display: 'flex', flexDirection: 'column', gap: '1rem', borderTop: '4px solid var(--purple)' }}>
@@ -1762,7 +1776,7 @@ export default function App() {
                         </div>
                         <div style={{ display: 'flex', flexDirection: 'column' }}>
                           <span style={{ fontSize: '0.65rem', fontWeight: 700, color: 'var(--text-secondary)', textTransform: 'uppercase' }}>Monthly</span>
-                          <span style={{ fontSize: '1rem', fontWeight: 800, color: 'var(--blue)' }}>{fmt(Math.round(samiti.daily_amount * 30))}</span>
+                          <span style={{ fontSize: '1rem', fontWeight: 800, color: 'var(--blue)' }}>{fmt(samiti.daily_amount * daysThisMonth)}</span>
                         </div>
                         <div style={{ display: 'flex', flexDirection: 'column' }}>
                           <span style={{ fontSize: '0.65rem', fontWeight: 700, color: 'var(--text-secondary)', textTransform: 'uppercase' }}>This Month</span>
@@ -2015,13 +2029,16 @@ export default function App() {
                       const form = e.target.form;
                       const d = parseFloat(form.daily_amount.value) || 0;
                       const t = parseInt(form.tenure_months.value) || 0;
-                      if (d) form.monthly_amount.value = Math.round(d * 30);
-                      if (d && t) form.maturity_amount.value = Math.round(d * 30 * t);
+                      const s = form.start_date.value;
+                      const now = new Date();
+                      const daysNow = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
+                      if (d) form.monthly_amount.value = Math.round(d * daysNow);
+                      if (d && t && s) form.maturity_amount.value = Math.round(d * calcActualDays(s, t));
                     }}/>
                   </div>
                   <div className="form-group">
                     <label>Monthly Amount (₹) <span style={{fontSize:'0.7rem',color:'var(--text-muted)',fontWeight:500}}>(auto)</span></label>
-                    <input name="monthly_amount" type="number" readOnly placeholder="auto" style={{opacity:0.7, cursor:'not-allowed'}} defaultValue={modal.item ? Math.round(modal.item.daily_amount * 30) : ''}/>
+                    <input name="monthly_amount" type="number" readOnly placeholder="auto" style={{opacity:0.7, cursor:'not-allowed'}} defaultValue={modal.item ? (() => { const now = new Date(); return Math.round(modal.item.daily_amount * new Date(now.getFullYear(), now.getMonth()+1, 0).getDate()); })() : ''}/>
                   </div>
                   <div className="form-group">
                     <label>Start Date</label>
@@ -2033,7 +2050,8 @@ export default function App() {
                       const form = e.target.form;
                       const d = parseFloat(form.daily_amount.value) || 0;
                       const t = parseInt(form.tenure_months.value) || 0;
-                      if (d && t) form.maturity_amount.value = Math.round(d * 30 * t);
+                      const s = form.start_date.value;
+                      if (d && t && s) form.maturity_amount.value = Math.round(d * calcActualDays(s, t));
                     }}/>
                   </div>
                   <div className="form-group">
