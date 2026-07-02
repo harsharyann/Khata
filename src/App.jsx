@@ -6,7 +6,8 @@ import {
   Building, CheckCircle, AlertTriangle, ChevronLeft, ChevronRight,
   BarChart2, ArrowUpRight, ArrowDownRight, Menu, Loader
 } from 'lucide-react';
-
+import { motion, AnimatePresence } from 'framer-motion';
+import CountUp from 'react-countup';
 import {
   Chart as ChartJS, CategoryScale, LinearScale, BarElement,
   LineElement, PointElement, ArcElement,
@@ -879,44 +880,41 @@ export default function App() {
   }
 
   return (
-    <div className="app-container">
+    <div className="app-layout">
 
-      {/* ═══ TOP NAVBAR ═══ */}
-      <header className="top-navbar">
-        <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
-          <div className="brand">
-            <span style={{ fontWeight: 900, letterSpacing: '-0.5px' }}>Finance Buddy</span>
-          </div>
+      {/* ═══ LEFT SIDEBAR ═══ */}
+      <nav className="left-sidebar">
+        <div className="brand" style={{ marginBottom: '2rem' }}>
+          <div style={{ fontSize: '1.8rem', opacity: 0.8 }}>💎</div>
+          <span className="brand-text" style={{ fontWeight: 900, letterSpacing: '-0.5px' }}>FinBuddy</span>
         </div>
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
-          <nav className="nav-menu">
-            {navItems.map(it => (
-              <button
-                key={it.id}
-                className={`nav-item ${view === it.id ? 'active' : ''}`}
-                onClick={() => setView(it.id)}
-              >
-                {it.icon}
-                <span>{it.label}</span>
-              </button>
-            ))}
-          </nav>
-
-          <div className="nav-profile">
-            <div className="profile-avatar">SK</div>
-            <span className="profile-name">Shailesh</span>
-            <button 
-              className="btn" 
-              style={{ background: 'var(--red-bg)', color: 'var(--red)', height: '28px', padding: '0 10px', fontSize: '0.72rem', fontWeight: 800, border: '1px solid transparent', borderRadius: '6px', marginLeft: '5px' }}
-              onClick={() => supabase.auth.signOut()}
+        <div className="nav-menu">
+          {navItems.map(it => (
+            <button
+              key={it.id}
+              className={`nav-item ${view === it.id ? 'active' : ''}`}
+              onClick={() => setView(it.id)}
             >
-              Logout
+              <div style={{ flexShrink: 0 }}>{it.icon}</div>
+              <span className="nav-item-label">{it.label}</span>
             </button>
-          </div>
+          ))}
         </div>
 
-      </header>
+        <div style={{ flex: 1 }}></div>
+
+        <div className="nav-profile" style={{ flexDirection: 'column', gap: 8, padding: 12, background: 'transparent', border: 'none' }}>
+          <div className="profile-avatar" style={{ margin: '0 auto' }}>SK</div>
+          <button 
+            className="btn nav-item-label" 
+            style={{ background: 'var(--red-bg)', color: 'var(--red)', height: '32px', padding: '0 16px', fontSize: '0.75rem', fontWeight: 800, border: '1px solid transparent', borderRadius: '6px' }}
+            onClick={() => supabase.auth.signOut()}
+          >
+            Logout
+          </button>
+        </div>
+      </nav>
 
       {/* ═══ MAIN ═══ */}
       <main className="main-content">
@@ -941,16 +939,22 @@ export default function App() {
               <div className="bento-grid">
                 <div className="cred-card bento-col-4" style={{ display: 'flex', flexDirection: 'column', gap: 8, padding: '2rem', boxShadow: '0 8px 32px rgba(16, 185, 129, 0.15)' }}>
                   <div style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', fontWeight: 800, letterSpacing: 1, textTransform: 'uppercase', display: 'flex', alignItems: 'center', gap: 8 }}><span style={{fontSize: '1.2rem', animation: 'float 3s ease-in-out infinite'}}>📈</span> Total Income</div>
-                  <div style={{ fontSize: '2.5rem', fontWeight: 900, color: 'var(--green)' }}>{fmt(totInc)}</div>
+                  <div style={{ fontSize: '2.5rem', fontWeight: 900, color: 'var(--green)' }}>
+                    <CountUp start={0} end={totInc} duration={1.5} formattingFn={fmt} />
+                  </div>
                 </div>
                 <div className="cred-card bento-col-4" style={{ display: 'flex', flexDirection: 'column', gap: 8, padding: '2rem', boxShadow: '0 8px 32px rgba(239, 68, 68, 0.15)' }}>
                   <div style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', fontWeight: 800, letterSpacing: 1, textTransform: 'uppercase', display: 'flex', alignItems: 'center', gap: 8 }}><span style={{fontSize: '1.2rem', animation: 'float 3s ease-in-out infinite 0.5s'}}>📉</span> Total Expenses</div>
-                  <div style={{ fontSize: '2.5rem', fontWeight: 900, color: 'var(--red)' }}>{fmt(totExp)}</div>
+                  <div style={{ fontSize: '2.5rem', fontWeight: 900, color: 'var(--red)' }}>
+                    <CountUp start={0} end={totExp} duration={1.5} formattingFn={fmt} />
+                  </div>
                 </div>
                 <div className="cred-card bento-col-4" style={{ display: 'flex', flexDirection: 'column', gap: 8, padding: '2rem', position: 'relative', overflow: 'hidden', boxShadow: '0 8px 32px rgba(59, 130, 246, 0.15)' }}>
                   <div style={{ position: 'absolute', right: -20, top: -20, fontSize: '8rem', opacity: 0.1, animation: 'float 6s ease-in-out infinite' }}>💰</div>
                   <div style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', fontWeight: 800, letterSpacing: 1, textTransform: 'uppercase', display: 'flex', alignItems: 'center', gap: 8, zIndex: 1 }}><span style={{fontSize: '1.2rem'}}>💎</span> Net Savings</div>
-                  <div style={{ fontSize: '2.5rem', fontWeight: 900, color: net >= 0 ? 'var(--blue)' : 'var(--red)', zIndex: 1 }}>{(net >= 0 ? '+' : '') + fmt(net)}</div>
+                  <div style={{ fontSize: '2.5rem', fontWeight: 900, color: net >= 0 ? 'var(--blue)' : 'var(--red)', zIndex: 1 }}>
+                    {net >= 0 ? '+' : ''}<CountUp start={0} end={Math.abs(net)} duration={1.5} formattingFn={fmt} />
+                  </div>
                 </div>
               </div>
 
