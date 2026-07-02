@@ -635,6 +635,11 @@ export default function App() {
   const ccDebt             = creditCards.reduce((s, c) => s + c.outstanding, 0);
   const ccLimit            = creditCards.reduce((s, c) => s + c.limit, 0);
   const ccUtil             = ccLimit > 0 ? ((ccDebt / ccLimit) * 100).toFixed(1) : 0;
+  
+  const totalSamitiInvested = samitiPayments.reduce((sum, p) => {
+    const s = samitis.find(x => x.id === p.samiti_id);
+    return sum + (s ? Number(s.daily_amount) * daysInPaymentMonth(p.payment_date) : 0);
+  }, 0);
 
 
   const navItems = [
@@ -1087,10 +1092,11 @@ export default function App() {
                   </div>
 
                   {/* Monthly Stats Row */}
-                  <div className="stat-grid" style={{ gridTemplateColumns: 'repeat(3, 1fr)', gap: '1.25rem' }}>
+                  <div className="stat-grid" style={{ gridTemplateColumns: 'repeat(4, 1fr)', gap: '1.25rem' }}>
                     <StatCard icon={<TrendingUp size={18}/>} color="green" label="Monthly Income" value={fmt(totInc)} valueColor="green" sub="This Month" />
                     <StatCard icon={<TrendingDown size={18}/>} color="red" label="Monthly Expenses" value={fmt(totExp)} valueColor="red" sub="This Month" />
                     <StatCard icon={<IndianRupee size={18}/>} color="blue" label="Net Savings" value={fmt(net)} valueColor={net >= 0 ? "green" : "red"} sub="Income - Expenses" />
+                    <StatCard icon={<Target size={18}/>} color="purple" label="Samiti Invested" value={fmt(totalSamitiInvested)} valueColor="purple" sub="Total Paid" />
                   </div>
 
                   {/* 15-Day Cashflow Chart */}
@@ -1732,10 +1738,7 @@ export default function App() {
               </div>
               <div className="stat-grid" style={{ marginBottom: '1.75rem' }}>
                 <StatCard icon={<Target size={18}/>}   color="purple"  label="Active Samitis"   value={samitis.length} />
-                <StatCard icon={<CheckCircle size={18}/>} color="green" label="Total Paid Amount" value={fmt(samitiPayments.reduce((sum, p) => {
-                  const s = samitis.find(x => x.id === p.samiti_id);
-                  return sum + (s ? Number(s.daily_amount) * daysInPaymentMonth(p.payment_date) : 0);
-                }, 0))} valueColor="green"/>
+                <StatCard icon={<CheckCircle size={18}/>} color="green" label="Total Paid Amount" value={fmt(totalSamitiInvested)} valueColor="green"/>
                 <StatCard icon={<TrendingUp size={18}/>} color="blue" label="Expected Returns" value={fmt(samitis.reduce((s, x) => s + Number(x.maturity_amount), 0))} />
               </div>
 
