@@ -1734,7 +1734,7 @@ export default function App() {
                 <StatCard icon={<Target size={18}/>}   color="purple"  label="Active Samitis"   value={samitis.length} />
                 <StatCard icon={<CheckCircle size={18}/>} color="green" label="Total Paid Amount" value={fmt(samitiPayments.reduce((sum, p) => {
                   const s = samitis.find(x => x.id === p.samiti_id);
-                  return sum + (s ? Number(s.daily_amount) : 0);
+                  return sum + (s ? Number(s.daily_amount) * daysInPaymentMonth(p.payment_date) : 0);
                 }, 0))} valueColor="green"/>
                 <StatCard icon={<TrendingUp size={18}/>} color="blue" label="Expected Returns" value={fmt(samitis.reduce((s, x) => s + Number(x.maturity_amount), 0))} />
               </div>
