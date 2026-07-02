@@ -77,9 +77,7 @@ const daysInPaymentMonth = (dateStr) => {
 //   SAMITI MONTH GRID COMPONENT
 // ─────────────────────────────────────────────
 const SamitiMonthGrid = ({ samiti, payments, togglePayment }) => {
-  const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun",
-                      "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-
+  const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
   const startDate = new Date(samiti.start_date);
   const now = new Date();
   const currentMonthStart = new Date(now.getFullYear(), now.getMonth(), 1);
@@ -89,38 +87,52 @@ const SamitiMonthGrid = ({ samiti, payments, togglePayment }) => {
     const d = new Date(startDate.getFullYear(), startDate.getMonth() + i, 1);
     const mm = String(d.getMonth() + 1).padStart(2, '0');
     const dateStr = `${d.getFullYear()}-${mm}-01`;
-    const label = `${monthNames[d.getMonth()]} ${String(d.getFullYear()).slice(2)}`;
+    const label = `${monthNames[d.getMonth()]} '${String(d.getFullYear()).slice(2)}`;
     const isPaid = payments.some(p => p.payment_date === dateStr);
     const isFuture = d > currentMonthStart;
-    months.push({ dateStr, label, isPaid, isFuture });
+    const isCurrent = d.getTime() === currentMonthStart.getTime();
+    months.push({ dateStr, label, isPaid, isFuture, isCurrent });
   }
 
   return (
-    <div style={{ background: 'var(--bg-hover)', padding: '12px', borderRadius: 'var(--r-md)', border: '1px solid var(--border)' }}>
-      <div style={{ fontSize: '0.7rem', fontWeight: 700, color: 'var(--text-muted)', marginBottom: '10px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-        Monthly Payments — Click to Mark Paid
+    <div style={{ background: '#F8FAFC', padding: '16px', borderRadius: '14px', border: '1px solid rgba(0,0,0,0.03)', boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.02)' }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
+        <span style={{ fontSize: '0.7rem', fontWeight: 700, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+          Payment Schedule
+        </span>
+        <span style={{ fontSize: '0.65rem', fontWeight: 600, color: 'var(--text-muted)', background: 'var(--border)', padding: '2px 6px', borderRadius: '4px' }}>
+          {months.filter(m => m.isPaid).length} / {months.length} Paid
+        </span>
       </div>
-      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
-        {months.map(({ dateStr, label, isPaid, isFuture }) => (
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(65px, 1fr))', gap: '8px' }}>
+        {months.map(({ dateStr, label, isPaid, isFuture, isCurrent }) => (
           <button
             key={dateStr}
             onClick={() => !isFuture && togglePayment(samiti.id, dateStr, isPaid)}
             disabled={isFuture}
             title={isFuture ? 'Future month' : (isPaid ? 'Click to unmark' : 'Click to mark paid')}
             style={{
-              padding: '5px 11px',
-              borderRadius: '20px',
-              fontSize: '0.72rem',
-              fontWeight: 700,
-              border: isPaid ? 'none' : `1px solid ${isFuture ? 'var(--border)' : 'var(--border-strong)'}`,
-              background: isPaid ? 'var(--green)' : (isFuture ? 'transparent' : 'var(--bg-card)'),
-              color: isPaid ? 'white' : (isFuture ? 'var(--text-muted)' : 'var(--text-secondary)'),
+              padding: '6px 4px',
+              borderRadius: '8px',
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '4px',
+              border: isPaid ? '1px solid var(--green)' : (isFuture ? '1px dashed var(--border)' : (isCurrent ? '1px solid var(--purple)' : '1px solid var(--border-strong)')),
+              background: isPaid ? 'var(--green-bg)' : (isFuture ? 'transparent' : 'var(--bg-card)'),
+              color: isPaid ? 'var(--green)' : (isFuture ? 'var(--text-muted)' : 'var(--text-primary)'),
               cursor: isFuture ? 'not-allowed' : 'pointer',
-              opacity: isFuture ? 0.35 : 1,
-              transition: 'all 0.15s',
+              opacity: isFuture ? 0.5 : 1,
+              transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+              transform: 'scale(1)',
+              boxShadow: isPaid ? '0 2px 8px rgba(16,185,129,0.15)' : 'none'
             }}
+            onMouseEnter={e => { if(!isFuture) e.currentTarget.style.transform = 'translateY(-2px)'; }}
+            onMouseLeave={e => { if(!isFuture) e.currentTarget.style.transform = 'translateY(0)'; }}
           >
-            {isPaid ? '✓ ' : ''}{label}
+            {isPaid ? <CheckCircle size={14} /> : <div style={{ width: 14, height: 14, borderRadius: '50%', border: `1.5px solid ${isCurrent ? 'var(--purple)' : 'var(--border-strong)'}` }}></div>}
+            <span style={{ fontSize: '0.65rem', fontWeight: 700 }}>{label}</span>
           </button>
         ))}
       </div>
@@ -1759,48 +1771,64 @@ export default function App() {
                   const progressPct = samiti.maturity_amount > 0 ? Math.min(100, (totalPaid / samiti.maturity_amount) * 100) : 0;
 
                   return (
-                    <div key={samiti.id} className="item-card" style={{ display: 'flex', flexDirection: 'column', gap: '1rem', borderTop: '4px solid var(--purple)' }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                    <div key={samiti.id} style={{ 
+                        display: 'flex', flexDirection: 'column', gap: '1.25rem', 
+                        background: 'linear-gradient(180deg, #FFFFFF 0%, #F8FAFC 100%)',
+                        border: '1px solid var(--border)',
+                        borderRadius: 'var(--r-xl)',
+                        padding: '1.5rem',
+                        boxShadow: 'var(--shadow-sm)',
+                        transition: 'transform 0.3s var(--ease), box-shadow 0.3s var(--ease)',
+                        position: 'relative', overflow: 'hidden'
+                    }}
+                    onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-4px)'; e.currentTarget.style.boxShadow = 'var(--shadow-lg)'; }}
+                    onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = 'var(--shadow-sm)'; }}
+                    >
+                      {/* Top Accent Line */}
+                      <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '4px', background: 'linear-gradient(90deg, var(--purple), var(--blue))' }}></div>
+
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginTop: '4px' }}>
                         <div>
-                          <h3 style={{ fontSize: '1.2rem', fontWeight: 800, color: 'var(--text-primary)', marginBottom: '4px' }}>{samiti.name}</h3>
-                          <span className="badge purple" style={{ fontSize: '0.7rem' }}>{samiti.tenure_months} Months</span>
+                          <h3 style={{ fontSize: '1.3rem', fontWeight: 900, color: 'var(--text-primary)', marginBottom: '4px', letterSpacing: '-0.5px' }}>{samiti.name}</h3>
+                          <span className="badge" style={{ fontSize: '0.7rem', background: 'var(--purple-bg)', color: 'var(--purple)', border: '1px solid rgba(139, 92, 246, 0.2)' }}>{samiti.tenure_months} Months Plan</span>
                         </div>
-                        <div style={{ display: 'flex', gap: 6 }}>
-                          <button className="btn-icon" onClick={() => openModal('Edit Samiti', 'samiti', samiti)}><Edit3 size={14}/></button>
-                          <button className="btn-icon danger" onClick={() => { if(confirm('Delete Samiti?')) deleteSamiti(samiti.id); }}><Trash2 size={14}/></button>
+                        <div style={{ display: 'flex', gap: 6, background: 'var(--bg-hover)', padding: '4px', borderRadius: '20px' }}>
+                          <button className="btn-icon" style={{ width: 28, height: 28, borderRadius: '50%' }} onClick={() => openModal('Edit Samiti', 'samiti', samiti)}><Edit3 size={13}/></button>
+                          <button className="btn-icon danger" style={{ width: 28, height: 28, borderRadius: '50%' }} onClick={() => { if(confirm('Delete Samiti?')) deleteSamiti(samiti.id); }}><Trash2 size={13}/></button>
                         </div>
                       </div>
 
-                      <div className="detail-grid" style={{ margin: '0', gridTemplateColumns: 'repeat(5, 1fr)', gap: '0.5rem' }}>
-                        <div style={{ display: 'flex', flexDirection: 'column' }}>
-                          <span style={{ fontSize: '0.65rem', fontWeight: 700, color: 'var(--text-secondary)', textTransform: 'uppercase' }}>Daily</span>
-                          <span style={{ fontSize: '1rem', fontWeight: 800, color: 'var(--text-primary)' }}>{fmt(samiti.daily_amount)}</span>
+                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
+                        <div style={{ background: 'var(--bg-card)', padding: '12px', borderRadius: 'var(--r-sm)', border: '1px solid var(--border)', display: 'flex', flexDirection: 'column' }}>
+                          <span style={{ fontSize: '0.65rem', fontWeight: 700, color: 'var(--text-secondary)', textTransform: 'uppercase' }}>Monthly Amt</span>
+                          <span style={{ fontSize: '1.1rem', fontWeight: 800, color: 'var(--text-primary)' }}>{fmt(samiti.daily_amount * daysThisMonth)}</span>
+                          <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>({fmt(samiti.daily_amount)}/day)</span>
                         </div>
-                        <div style={{ display: 'flex', flexDirection: 'column' }}>
-                          <span style={{ fontSize: '0.65rem', fontWeight: 700, color: 'var(--text-secondary)', textTransform: 'uppercase' }}>Monthly</span>
-                          <span style={{ fontSize: '1rem', fontWeight: 800, color: 'var(--blue)' }}>{fmt(samiti.daily_amount * daysThisMonth)}</span>
+
+                        <div style={{ background: 'var(--green-bg)', padding: '12px', borderRadius: 'var(--r-sm)', border: '1px solid rgba(16,185,129,0.1)', display: 'flex', flexDirection: 'column' }}>
+                          <span style={{ fontSize: '0.65rem', fontWeight: 700, color: 'var(--green)', textTransform: 'uppercase' }}>This Month</span>
+                          <span style={{ fontSize: '1.1rem', fontWeight: 800, color: 'var(--green)' }}>{fmt(paidThisMonth)}</span>
+                          <span style={{ fontSize: '0.7rem', color: 'rgba(16,185,129,0.8)' }}>Paid</span>
                         </div>
-                        <div style={{ display: 'flex', flexDirection: 'column' }}>
-                          <span style={{ fontSize: '0.65rem', fontWeight: 700, color: 'var(--text-secondary)', textTransform: 'uppercase' }}>This Month</span>
-                          <span style={{ fontSize: '1rem', fontWeight: 800, color: 'var(--green)' }}>{fmt(paidThisMonth)}</span>
-                        </div>
-                        <div style={{ display: 'flex', flexDirection: 'column' }}>
+
+                        <div style={{ background: 'var(--bg-card)', padding: '12px', borderRadius: 'var(--r-sm)', border: '1px solid var(--border)', display: 'flex', flexDirection: 'column' }}>
                           <span style={{ fontSize: '0.65rem', fontWeight: 700, color: 'var(--text-secondary)', textTransform: 'uppercase' }}>Total Paid</span>
-                          <span style={{ fontSize: '1rem', fontWeight: 800, color: 'var(--green)' }}>{fmt(totalPaid)}</span>
+                          <span style={{ fontSize: '1.1rem', fontWeight: 800, color: 'var(--text-primary)' }}>{fmt(totalPaid)}</span>
                         </div>
-                        <div style={{ display: 'flex', flexDirection: 'column' }}>
-                          <span style={{ fontSize: '0.65rem', fontWeight: 700, color: 'var(--text-secondary)', textTransform: 'uppercase' }}>Maturity</span>
-                          <span style={{ fontSize: '1rem', fontWeight: 800, color: 'var(--text-primary)' }}>{fmt(samiti.maturity_amount)}</span>
+
+                        <div style={{ background: 'linear-gradient(135deg, var(--purple-bg) 0%, rgba(139,92,246,0) 100%)', padding: '12px', borderRadius: 'var(--r-sm)', border: '1px solid rgba(139,92,246,0.1)', display: 'flex', flexDirection: 'column' }}>
+                          <span style={{ fontSize: '0.65rem', fontWeight: 700, color: 'var(--purple)', textTransform: 'uppercase' }}>Maturity</span>
+                          <span style={{ fontSize: '1.1rem', fontWeight: 800, color: 'var(--purple)' }}>{fmt(samiti.maturity_amount)}</span>
                         </div>
                       </div>
 
-                      <div>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-muted)', marginBottom: 6 }}>
-                          <span>Start: {fmtDate(samiti.start_date)}</span>
-                          <span>End: {fmtDate(mDate)}</span>
+                      <div style={{ padding: '4px 0' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-muted)', marginBottom: 8 }}>
+                          <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}><Calendar size={12}/> {fmtDate(samiti.start_date)}</span>
+                          <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}><Target size={12}/> {fmtDate(mDate)}</span>
                         </div>
-                        <div className="progress-bar-wrap">
-                          <div className="progress-bar-fill purple" style={{ width: `${progressPct}%`, background: 'var(--purple)' }}></div>
+                        <div style={{ height: '8px', background: 'var(--border)', borderRadius: '99px', overflow: 'hidden' }}>
+                          <div style={{ height: '100%', width: `${progressPct}%`, background: 'linear-gradient(90deg, var(--purple), var(--blue))', borderRadius: '99px', transition: 'width 1s cubic-bezier(0.4, 0, 0.2, 1)' }}></div>
                         </div>
                       </div>
 
