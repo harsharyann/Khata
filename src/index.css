@@ -174,15 +174,6 @@ input, select, textarea { font-family: var(--font); outline: none; }
   background: var(--bg-base);
   position: relative;
 }
-.app-layout::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  z-index: 9999;
-  pointer-events: none;
-  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
-  opacity: 0.03;
-}
 
 .left-sidebar {
   width: 80px;
@@ -333,22 +324,10 @@ input, select, textarea { font-family: var(--font); outline: none; }
 }
 
 @media (max-width: 1024px) {
-  .mobile-menu-btn {
-    display: none;
-  }
-
-  /* Hide desktop nav — bottom nav handles mobile */
-  .nav-menu {
+  .left-sidebar {
     display: none !important;
   }
 
-  /* Simplify top navbar on mobile */
-  .top-navbar {
-    justify-content: center;
-    padding: 0.5rem 1rem;
-    margin: 0.75rem auto 0.5rem;
-    border-radius: var(--r-lg);
-  }
 
   /* Structural Mobile Overrides */
   .scroll-area { 
