@@ -824,12 +824,14 @@ export default function App() {
 
         <div className="login-card">
           <div className="auth-header" style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-            <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '0.25rem' }}>
-              <span style={{ fontSize: '3rem', filter: 'drop-shadow(0 0 15px rgba(56, 189, 248, 0.4))' }}>💎</span>
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', padding: '10px 0' }}>
+              <div style={{ fontFamily: '"Caveat", cursive', fontSize: '3.2rem', fontWeight: 700, color: 'var(--accent)', letterSpacing: '1px', transform: 'rotate(-5deg)', whiteSpace: 'nowrap', textShadow: '0 4px 15px rgba(79, 70, 229, 0.4)' }}>
+                Harsh Aryan
+              </div>
+              <div style={{ fontSize: '0.9rem', textAlign: 'center', opacity: 0.8, fontStyle: 'italic', lineHeight: 1.4, color: 'var(--text-secondary)' }}>
+                "Designing logic,<br/>coding aesthetics."
+              </div>
             </div>
-            <h2 style={{ fontSize: '1.6rem', background: 'linear-gradient(135deg, var(--text-primary) 0%, var(--blue) 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', fontWeight: 900, letterSpacing: '-0.5px' }}>
-              Finance Buddy
-            </h2>
             <div style={{ borderBottom: '1px solid rgba(255,255,255,0.08)', paddingBottom: '0.75rem', marginBottom: '0.25rem' }}>
               <div style={{ fontSize: '0.92rem', fontWeight: 800, color: 'var(--green)', letterSpacing: '0.3px' }}>
                 Welcome, Shailesh Kumar Nirala
