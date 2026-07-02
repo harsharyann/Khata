@@ -1755,10 +1755,14 @@ export default function App() {
                         </div>
                       </div>
 
-                      <div className="detail-grid" style={{ margin: '0', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: '0.5rem' }}>
+                      <div className="detail-grid" style={{ margin: '0', gridTemplateColumns: 'repeat(5, 1fr)', gap: '0.5rem' }}>
+                        <div style={{ display: 'flex', flexDirection: 'column' }}>
+                          <span style={{ fontSize: '0.65rem', fontWeight: 700, color: 'var(--text-secondary)', textTransform: 'uppercase' }}>Daily</span>
+                          <span style={{ fontSize: '1rem', fontWeight: 800, color: 'var(--text-primary)' }}>{fmt(samiti.daily_amount)}</span>
+                        </div>
                         <div style={{ display: 'flex', flexDirection: 'column' }}>
                           <span style={{ fontSize: '0.65rem', fontWeight: 700, color: 'var(--text-secondary)', textTransform: 'uppercase' }}>Monthly</span>
-                          <span style={{ fontSize: '1rem', fontWeight: 800, color: 'var(--text-primary)' }}>{fmt(samiti.daily_amount)}</span>
+                          <span style={{ fontSize: '1rem', fontWeight: 800, color: 'var(--blue)' }}>{fmt(Math.round(samiti.daily_amount * 30))}</span>
                         </div>
                         <div style={{ display: 'flex', flexDirection: 'column' }}>
                           <span style={{ fontSize: '0.65rem', fontWeight: 700, color: 'var(--text-secondary)', textTransform: 'uppercase' }}>This Month</span>
@@ -2006,15 +2010,18 @@ export default function App() {
                     <input name="name" type="text" required placeholder="e.g. Diwali Samiti" defaultValue={modal.item?.name || ''}/>
                   </div>
                   <div className="form-group">
-                    <label>Monthly Amount (₹)</label>
-                    <input name="daily_amount" type="number" required placeholder="0" min="1" defaultValue={modal.item?.daily_amount || ''} onChange={e => {
+                    <label>Daily Amount (₹)</label>
+                    <input name="daily_amount" type="number" required placeholder="e.g. 100" min="1" defaultValue={modal.item?.daily_amount || ''} onChange={e => {
                       const form = e.target.form;
                       const d = parseFloat(form.daily_amount.value) || 0;
                       const t = parseInt(form.tenure_months.value) || 0;
-                      if (d && t) {
-                        form.maturity_amount.value = d * t;
-                      }
+                      if (d) form.monthly_amount.value = Math.round(d * 30);
+                      if (d && t) form.maturity_amount.value = Math.round(d * 30 * t);
                     }}/>
+                  </div>
+                  <div className="form-group">
+                    <label>Monthly Amount (₹) <span style={{fontSize:'0.7rem',color:'var(--text-muted)',fontWeight:500}}>(auto)</span></label>
+                    <input name="monthly_amount" type="number" readOnly placeholder="auto" style={{opacity:0.7, cursor:'not-allowed'}} defaultValue={modal.item ? Math.round(modal.item.daily_amount * 30) : ''}/>
                   </div>
                   <div className="form-group">
                     <label>Start Date</label>
@@ -2026,13 +2033,11 @@ export default function App() {
                       const form = e.target.form;
                       const d = parseFloat(form.daily_amount.value) || 0;
                       const t = parseInt(form.tenure_months.value) || 0;
-                      if (d && t) {
-                        form.maturity_amount.value = d * t;
-                      }
+                      if (d && t) form.maturity_amount.value = Math.round(d * 30 * t);
                     }}/>
                   </div>
                   <div className="form-group">
-                    <label>Expected Maturity (₹)</label>
+                    <label>Expected Maturity (₹) <span style={{fontSize:'0.7rem',color:'var(--text-muted)',fontWeight:500}}>(auto)</span></label>
                     <input name="maturity_amount" type="number" required placeholder="0" min="1" defaultValue={modal.item?.maturity_amount || ''}/>
                   </div>
                   <button type="submit" className="btn btn-primary" style={{ gridColumn: '1 / -1' }}>{modal.item ? 'Update Samiti' : 'Create Samiti'}</button>
