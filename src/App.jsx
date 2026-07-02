@@ -815,15 +815,26 @@ export default function App() {
 
   if (!session) {
     return (
-      <div className="login-container">
-        {/* Animated Background Bubbles preserved for atmosphere */}
-        <ul className="auth-bg-bubbles" style={{ zIndex: 1 }}>
-          <li></li><li></li><li></li><li></li><li></li>
-          <li></li><li></li><li></li><li></li><li></li>
-        </ul>
+      <div className="login-container" style={{ position: 'relative', overflow: 'hidden' }}>
+        
+        {/* FAKE DASHBOARD BACKGROUND */}
+        <div className="fake-dashboard" style={{ position: 'absolute', inset: 0, opacity: 0.6, pointerEvents: 'none', zIndex: 0, display: 'flex', flexDirection: 'column', gap: '2rem', padding: '3rem' }}>
+          <div style={{ display: 'flex', gap: '2rem' }}>
+             <div style={{ width: '30%', height: '150px', background: 'var(--bg-card)', borderRadius: '24px', border: '1px solid var(--border)' }}></div>
+             <div style={{ width: '30%', height: '150px', background: 'var(--bg-card)', borderRadius: '24px', border: '1px solid var(--border)' }}></div>
+             <div style={{ width: '40%', height: '150px', background: 'var(--bg-card)', borderRadius: '24px', border: '1px solid var(--border)' }}></div>
+          </div>
+          <div style={{ display: 'flex', gap: '2rem', flex: 1 }}>
+             <div style={{ flex: 1, background: 'var(--bg-card)', borderRadius: '24px', border: '1px solid var(--border)' }}></div>
+             <div style={{ width: '35%', background: 'var(--bg-card)', borderRadius: '24px', border: '1px solid var(--border)' }}></div>
+          </div>
+        </div>
 
-        <div className="login-card">
-          <div className="auth-header" style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+        {/* BLUR OVERLAY */}
+        <div style={{ position: 'absolute', inset: 0, backdropFilter: 'blur(24px)', WebkitBackdropFilter: 'blur(24px)', zIndex: 1, background: 'rgba(11, 17, 33, 0.4)' }}></div>
+
+        <div className="login-card" style={{ zIndex: 2, position: 'relative', maxWidth: '360px', padding: '2rem', margin: '0 auto', transform: 'translateY(-5vh)', border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(15, 23, 42, 0.65)', backdropFilter: 'blur(40px)', WebkitBackdropFilter: 'blur(40px)', boxShadow: '0 30px 60px rgba(0,0,0,0.5)' }}>
+          <div className="auth-header" style={{ display: 'flex', flexDirection: 'column', gap: '0.2rem' }}>
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', padding: '10px 0' }}>
               <div style={{ fontFamily: '"Caveat", cursive', fontSize: '3.2rem', fontWeight: 700, color: 'var(--accent)', letterSpacing: '1px', transform: 'rotate(-5deg)', whiteSpace: 'nowrap', textShadow: '0 4px 15px rgba(79, 70, 229, 0.4)' }}>
                 Harsh Aryan
