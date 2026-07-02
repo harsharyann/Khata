@@ -884,9 +884,13 @@ export default function App() {
 
       {/* ═══ LEFT SIDEBAR ═══ */}
       <nav className="left-sidebar">
-        <div className="brand" style={{ marginBottom: '2rem' }}>
-          <div style={{ fontSize: '1.8rem', opacity: 0.8 }}>💎</div>
-          <span className="brand-text" style={{ fontWeight: 900, letterSpacing: '-0.5px' }}>FinBuddy</span>
+        <div className="brand" style={{ marginBottom: '2rem', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', padding: '10px 0' }}>
+          <div style={{ fontFamily: '"Caveat", cursive', fontSize: '2.2rem', fontWeight: 700, color: 'var(--accent)', letterSpacing: '1px', transform: 'rotate(-5deg)', whiteSpace: 'nowrap' }}>
+            Harsh Aryan
+          </div>
+          <div className="nav-item-label" style={{ fontSize: '0.65rem', textAlign: 'center', opacity: 0.6, fontStyle: 'italic', padding: '0 8px', lineHeight: 1.4 }}>
+            "Designing logic,<br/>coding aesthetics."
+          </div>
         </div>
 
         <div className="nav-menu">
