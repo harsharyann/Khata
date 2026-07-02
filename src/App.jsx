@@ -818,7 +818,7 @@ export default function App() {
       <div className="login-container" style={{ position: 'relative', overflow: 'hidden' }}>
         
         {/* FAKE DASHBOARD BACKGROUND */}
-        <div className="fake-dashboard" style={{ position: 'absolute', inset: 0, opacity: 0.6, pointerEvents: 'none', zIndex: 0, display: 'flex', flexDirection: 'column', gap: '2rem', padding: '3rem' }}>
+        <div className="fake-dashboard" style={{ position: 'absolute', inset: 0, opacity: 0.4, pointerEvents: 'none', zIndex: 0, display: 'flex', flexDirection: 'column', gap: '2rem', padding: '3rem', filter: 'blur(10px)', WebkitFilter: 'blur(10px)' }}>
           <div style={{ display: 'flex', gap: '2rem' }}>
              <div style={{ width: '30%', height: '150px', background: 'var(--bg-card)', borderRadius: '24px', border: '1px solid var(--border)' }}></div>
              <div style={{ width: '30%', height: '150px', background: 'var(--bg-card)', borderRadius: '24px', border: '1px solid var(--border)' }}></div>
@@ -830,8 +830,8 @@ export default function App() {
           </div>
         </div>
 
-        {/* BLUR OVERLAY */}
-        <div style={{ position: 'absolute', inset: 0, backdropFilter: 'blur(24px)', WebkitBackdropFilter: 'blur(24px)', zIndex: 1, background: 'rgba(11, 17, 33, 0.4)' }}></div>
+        {/* DARK OVERLAY */}
+        <div style={{ position: 'absolute', inset: 0, zIndex: 1, background: 'rgba(11, 17, 33, 0.5)' }}></div>
 
         <div className="login-card" style={{ zIndex: 2, position: 'relative', maxWidth: '360px', padding: '2rem', margin: '0 auto', transform: 'translateY(-5vh)', border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(15, 23, 42, 0.65)', backdropFilter: 'blur(40px)', WebkitBackdropFilter: 'blur(40px)', boxShadow: '0 30px 60px rgba(0,0,0,0.5)' }}>
           <div className="auth-header" style={{ display: 'flex', flexDirection: 'column', gap: '0.2rem' }}>
