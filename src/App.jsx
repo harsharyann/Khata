@@ -95,7 +95,7 @@ const SamitiMonthGrid = ({ samiti, payments, togglePayment }) => {
   }
 
   return (
-    <div style={{ background: '#F8FAFC', padding: '16px', borderRadius: '14px', border: '1px solid rgba(0,0,0,0.03)', boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.02)' }}>
+    <div style={{ background: 'rgba(255,255,255,0.02)', backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)', padding: '16px', borderRadius: '14px', border: '1px solid rgba(255,255,255,0.05)', boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.1)' }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
         <span style={{ fontSize: '0.7rem', fontWeight: 700, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
           Payment Schedule
@@ -1769,19 +1769,11 @@ export default function App() {
                   const progressPct = samiti.maturity_amount > 0 ? Math.min(100, (totalPaid / samiti.maturity_amount) * 100) : 0;
 
                   return (
-                    <div key={samiti.id} style={{ 
+                    <div key={samiti.id} className="glass-panel" style={{ 
                         display: 'flex', flexDirection: 'column', gap: '1.25rem', 
-                        background: 'linear-gradient(180deg, #FFFFFF 0%, #F8FAFC 100%)',
-                        border: '1px solid var(--border)',
-                        borderRadius: 'var(--r-xl)',
                         padding: '1.5rem',
-                        boxShadow: 'var(--shadow-sm)',
-                        transition: 'transform 0.3s var(--ease), box-shadow 0.3s var(--ease)',
                         position: 'relative', overflow: 'hidden'
                     }}
-                    onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-4px)'; e.currentTarget.style.boxShadow = 'var(--shadow-lg)'; }}
-                    onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = 'var(--shadow-sm)'; }}
-                    >
                       {/* Top Accent Line */}
                       <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '4px', background: 'linear-gradient(90deg, var(--purple), var(--blue))' }}></div>
 
