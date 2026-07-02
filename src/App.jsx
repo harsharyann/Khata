@@ -145,35 +145,48 @@ const SamitiMonthGrid = ({ samiti, payments, togglePayment }) => {
 //   PERSONAL VIEW COMPONENT
 // ─────────────────────────────────────────────
 const PersonalView = () => {
-  const [emiLoan, setEmiLoan] = useState(() => localStorage.getItem('emiLoan') || '');
-  const [emiRate, setEmiRate] = useState(() => localStorage.getItem('emiRate') || '');
-  const [emiTenure, setEmiTenure] = useState(() => localStorage.getItem('emiTenure') || '');
-
   const [fundTotal, setFundTotal] = useState(() => localStorage.getItem('fundTotal') || '');
   const [fundUsed, setFundUsed] = useState(() => localStorage.getItem('fundUsed') || '');
+  const [emis, setEmis] = useState(() => {
+    try {
+      return JSON.parse(localStorage.getItem('activeEmis')) || [];
+    } catch {
+      return [];
+    }
+  });
 
-  useEffect(() => { localStorage.setItem('emiLoan', emiLoan); }, [emiLoan]);
-  useEffect(() => { localStorage.setItem('emiRate', emiRate); }, [emiRate]);
-  useEffect(() => { localStorage.setItem('emiTenure', emiTenure); }, [emiTenure]);
+  const [newEmiName, setNewEmiName] = useState('');
+  const [newEmiAmt, setNewEmiAmt] = useState('');
+  const [newEmiTotal, setNewEmiTotal] = useState('');
+  const [newEmiPaid, setNewEmiPaid] = useState('');
+
   useEffect(() => { localStorage.setItem('fundTotal', fundTotal); }, [fundTotal]);
   useEffect(() => { localStorage.setItem('fundUsed', fundUsed); }, [fundUsed]);
+  useEffect(() => { localStorage.setItem('activeEmis', JSON.stringify(emis)); }, [emis]);
 
-  const P = parseFloat(emiLoan) || 0;
-  const R = (parseFloat(emiRate) || 0) / 12 / 100;
-  const N = parseFloat(emiTenure) || 0;
-  
-  let emi = 0;
-  let totalPayable = 0;
-  let totalInterest = 0;
-  
-  if (P > 0 && R > 0 && N > 0) {
-    emi = P * R * (Math.pow(1 + R, N) / (Math.pow(1 + R, N) - 1));
-    totalPayable = emi * N;
-    totalInterest = totalPayable - P;
-  } else if (P > 0 && N > 0) {
-    emi = P / N; 
-    totalPayable = P;
-  }
+  const handleAddEmi = () => {
+    if (!newEmiName || !newEmiAmt || !newEmiTotal) return;
+    const n = {
+      id: Date.now(),
+      name: newEmiName,
+      amount: parseFloat(newEmiAmt) || 0,
+      totalMonths: parseInt(newEmiTotal) || 0,
+      paidMonths: parseInt(newEmiPaid) || 0,
+    };
+    setEmis([...emis, n]);
+    setNewEmiName('');
+    setNewEmiAmt('');
+    setNewEmiTotal('');
+    setNewEmiPaid('');
+  };
+
+  const incrementEmi = (id) => {
+    setEmis(emis.map(e => e.id === id && e.paidMonths < e.totalMonths ? { ...e, paidMonths: e.paidMonths + 1 } : e));
+  };
+
+  const deleteEmi = (id) => {
+    setEmis(emis.filter(e => e.id !== id));
+  };
 
   const fT = parseFloat(fundTotal) || 0;
   const fU = parseFloat(fundUsed) || 0;
@@ -196,39 +209,46 @@ const PersonalView = () => {
         <div className="cred-card bento-col-6" style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem', minHeight: '380px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
             <div style={{ background: 'var(--accent-soft)', color: 'var(--accent)', padding: '10px', borderRadius: '12px' }}><PieChart size={20} /></div>
-            <h3 style={{ fontSize: '1.2rem', fontWeight: 800 }}>EMI Calculator</h3>
+            <h3 style={{ fontSize: '1.2rem', fontWeight: 800 }}>Active EMI Tracker</h3>
           </div>
           
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', flex: 1 }}>
-            <div className="form-group full">
-              <label>Loan Amount (₹)</label>
-              <input type="number" placeholder="e.g. 500000" className="glass-input" value={emiLoan} onChange={e => setEmiLoan(e.target.value)} />
-            </div>
-            <div style={{ display: 'flex', gap: '1rem' }}>
-              <div className="form-group" style={{ flex: 1 }}>
-                <label>Interest Rate (% p.a.)</label>
-                <input type="number" step="0.1" placeholder="e.g. 10.5" className="glass-input" value={emiRate} onChange={e => setEmiRate(e.target.value)} />
-              </div>
-              <div className="form-group" style={{ flex: 1 }}>
-                <label>Tenure (Months)</label>
-                <input type="number" placeholder="e.g. 24" className="glass-input" value={emiTenure} onChange={e => setEmiTenure(e.target.value)} />
-              </div>
-            </div>
+          <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+            <input type="text" placeholder="EMI Name (e.g. iPhone)" className="glass-input" style={{ flex: 1, minWidth: '120px' }} value={newEmiName} onChange={e => setNewEmiName(e.target.value)} />
+            <input type="number" placeholder="₹ Amount/mo" className="glass-input" style={{ width: '120px' }} value={newEmiAmt} onChange={e => setNewEmiAmt(e.target.value)} />
+            <input type="number" placeholder="Total Months" className="glass-input" style={{ width: '100px' }} value={newEmiTotal} onChange={e => setNewEmiTotal(e.target.value)} />
+            <input type="number" placeholder="Paid Months" className="glass-input" style={{ width: '100px' }} value={newEmiPaid} onChange={e => setNewEmiPaid(e.target.value)} />
+            <button className="glass-btn" style={{ padding: '0 1rem' }} onClick={handleAddEmi}><Plus size={18} /></button>
           </div>
 
-          <div style={{ background: 'var(--bg-hover)', padding: '1.5rem', borderRadius: '16px', border: '1px solid var(--border)', marginTop: '1rem' }}>
-            <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.5px' }}>Monthly EMI</div>
-            <div style={{ fontSize: '2.5rem', fontWeight: 900, color: 'var(--accent)', margin: '0.25rem 0 1rem' }}>₹{Math.round(emi).toLocaleString('en-IN')}</div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', borderTop: '1px solid var(--border-strong)', paddingTop: '1rem' }}>
-              <div>
-                <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Total Interest</div>
-                <div style={{ fontSize: '1rem', fontWeight: 700, color: 'var(--text-primary)' }}>₹{Math.round(totalInterest).toLocaleString('en-IN')}</div>
-              </div>
-              <div style={{ textAlign: 'right' }}>
-                <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Total Payable</div>
-                <div style={{ fontSize: '1rem', fontWeight: 700, color: 'var(--text-primary)' }}>₹{Math.round(totalPayable).toLocaleString('en-IN')}</div>
-              </div>
-            </div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', marginTop: '1rem', maxHeight: '400px', overflowY: 'auto', paddingRight: '10px' }}>
+            {emis.length === 0 ? (
+              <div style={{ textAlign: 'center', color: 'var(--text-muted)', fontSize: '0.9rem', padding: '2rem 0' }}>No active EMIs tracked.</div>
+            ) : emis.map(e => {
+              const remMonths = Math.max(0, e.totalMonths - e.paidMonths);
+              const remAmount = remMonths * e.amount;
+              const pct = e.totalMonths > 0 ? (e.paidMonths / e.totalMonths) * 100 : 0;
+              return (
+                <div key={e.id} style={{ background: 'var(--bg-hover)', padding: '1.2rem', borderRadius: '16px', border: '1px solid var(--border)', position: 'relative' }}>
+                  <button onClick={() => deleteEmi(e.id)} style={{ position: 'absolute', top: '1rem', right: '1rem', background: 'transparent', border: 'none', color: 'var(--text-muted)', cursor: 'pointer' }}><Trash2 size={16} /></button>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
+                    <div style={{ fontSize: '1.1rem', fontWeight: 800 }}>{e.name}</div>
+                    <div style={{ fontSize: '1.1rem', fontWeight: 800, color: 'var(--accent)', marginRight: '2rem' }}>₹{e.amount.toLocaleString('en-IN')}<span style={{ fontSize: '0.7rem', color: 'var(--text-muted)', fontWeight: 500 }}>/mo</span></div>
+                  </div>
+                  <div style={{ display: 'flex', gap: '2rem', fontSize: '0.8rem', color: 'var(--text-secondary)', marginBottom: '1rem' }}>
+                    <div><span style={{ color: 'var(--text-primary)', fontWeight: 600 }}>{remMonths}</span> months left</div>
+                    <div><span style={{ color: 'var(--text-primary)', fontWeight: 600 }}>₹{remAmount.toLocaleString('en-IN')}</span> remaining</div>
+                  </div>
+                  
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                    <div style={{ flex: 1, height: '8px', background: 'var(--bg-base)', borderRadius: '99px', overflow: 'hidden' }}>
+                      <div style={{ height: '100%', width: `${pct}%`, background: pct === 100 ? 'var(--green)' : 'var(--accent)', transition: 'width 0.3s ease' }}></div>
+                    </div>
+                    <div style={{ fontSize: '0.75rem', fontWeight: 700, minWidth: '40px' }}>{e.paidMonths}/{e.totalMonths}</div>
+                    <button onClick={() => incrementEmi(e.id)} disabled={e.paidMonths >= e.totalMonths} className="btn" style={{ padding: '4px 12px', background: 'var(--accent-soft)', color: 'var(--accent)', borderRadius: '6px', fontSize: '0.8rem', fontWeight: 700, border: 'none', cursor: e.paidMonths >= e.totalMonths ? 'not-allowed' : 'pointer', opacity: e.paidMonths >= e.totalMonths ? 0.5 : 1 }}>+1</button>
+                  </div>
+                </div>
+              );
+            })}
           </div>
         </div>
 
