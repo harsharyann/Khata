@@ -1773,7 +1773,7 @@ export default function App() {
                         display: 'flex', flexDirection: 'column', gap: '1.25rem', 
                         padding: '1.5rem',
                         position: 'relative', overflow: 'hidden'
-                    }}
+                    }}>
                       {/* Top Accent Line */}
                       <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '4px', background: 'linear-gradient(90deg, var(--purple), var(--blue))' }}></div>
 

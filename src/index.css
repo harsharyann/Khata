@@ -1672,6 +1672,16 @@ input, select, textarea { font-family: var(--font); outline: none; }
   padding: 14px;
   border-radius: var(--r-md);
   font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 4px 15px rgba(79, 70, 229, 0.4);
+  transition: all 0.3s var(--ease);
+}
+.glass-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(79, 70, 229, 0.6);
+}
+
 .auth-card {
   width: 100%;
   max-width: 480px;
