@@ -791,7 +791,31 @@ export default function App() {
         <p style={{ color: 'var(--text-secondary)', maxWidth: '480px', margin: '0.75rem auto 1.5rem', fontSize: '0.9rem', lineHeight: 1.5 }}>
           Supabase credentials are missing. If you have deployed to Vercel, please go to your <strong>Vercel Project Settings &rarr; Environment Variables</strong> and add:
         </p>
-        <div style={{ background: 'var(--bg-hov      <div className="login-container" style={{ position: 'relative', overflow: 'hidden', display: 'flex', flexDirection: 'column', height: '100vh', width: '100vw', padding: 0 }}>
+        <div style={{ background: 'var(--bg-hover)', padding: '12px 16px', borderRadius: '8px', border: '1px solid var(--border)', display: 'inline-block', textAlign: 'left', fontFamily: 'monospace', fontSize: '0.78rem', color: 'var(--text-primary)', marginBottom: '1.5rem' }}>
+          <div>VITE_SUPABASE_URL</div>
+          <div style={{ marginBottom: '8px', color: 'var(--text-muted)' }}>https://otnxfohecczaberldjuy.supabase.co</div>
+          <div>VITE_SUPABASE_ANON_KEY</div>
+          <div style={{ color: 'var(--text-muted)' }}>your-supabase-anon-key</div>
+        </div>
+        <p style={{ color: 'var(--text-muted)', fontSize: '0.8rem' }}>After adding the variables, redeploy your project on Vercel.</p>
+      </div>
+    );
+  }
+
+  if (loading && incomes.length === 0 && banks.length === 0) {
+    return (
+      <div className="loader-container">
+        <div className="pulsing-orb">
+          <IndianRupee size={36} />
+        </div>
+        <span className="loader-text">Syncing with Supabase...</span>
+      </div>
+    );
+  }
+
+  if (!session) {
+    return (
+      <div className="login-container" style={{ position: 'relative', overflow: 'hidden', display: 'flex', flexDirection: 'column', height: '100vh', width: '100vw', padding: 0 }}>
         
         {/* FAKE DASHBOARD BACKGROUND */}
         <div className="fake-dashboard" style={{ position: 'absolute', inset: 0, opacity: 0.15, pointerEvents: 'none', zIndex: 0, display: 'flex', flexDirection: 'column', gap: '2rem', padding: '3rem', filter: 'blur(8px)', WebkitFilter: 'blur(8px)' }}>
