@@ -1092,11 +1092,10 @@ export default function App() {
                   </div>
 
                   {/* Monthly Stats Row */}
-                  <div className="stat-grid" style={{ gridTemplateColumns: 'repeat(4, 1fr)', gap: '1.25rem' }}>
+                  <div className="stat-grid" style={{ gridTemplateColumns: 'repeat(3, 1fr)', gap: '1.25rem' }}>
                     <StatCard icon={<TrendingUp size={18}/>} color="green" label="Monthly Income" value={fmt(totInc)} valueColor="green" sub="This Month" />
                     <StatCard icon={<TrendingDown size={18}/>} color="red" label="Monthly Expenses" value={fmt(totExp)} valueColor="red" sub="This Month" />
                     <StatCard icon={<IndianRupee size={18}/>} color="blue" label="Net Savings" value={fmt(net)} valueColor={net >= 0 ? "green" : "red"} sub="Income - Expenses" />
-                    <StatCard icon={<Target size={18}/>} color="purple" label="Samiti Invested" value={fmt(totalSamitiInvested)} valueColor="purple" sub="Total Paid" />
                   </div>
 
                   {/* 15-Day Cashflow Chart */}
