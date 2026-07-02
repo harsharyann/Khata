@@ -159,29 +159,45 @@ const PersonalView = () => {
   const [newEmiAmt, setNewEmiAmt] = useState('');
   const [newEmiTotal, setNewEmiTotal] = useState('');
   const [newEmiPaid, setNewEmiPaid] = useState('');
+  const [newEmiStart, setNewEmiStart] = useState('');
+  const [newEmiDue, setNewEmiDue] = useState('');
 
   useEffect(() => { localStorage.setItem('fundTotal', fundTotal); }, [fundTotal]);
   useEffect(() => { localStorage.setItem('fundUsed', fundUsed); }, [fundUsed]);
   useEffect(() => { localStorage.setItem('activeEmis', JSON.stringify(emis)); }, [emis]);
 
   const handleAddEmi = () => {
-    if (!newEmiName || !newEmiAmt || !newEmiTotal) return;
+    if (!newEmiName || !newEmiAmt || !newEmiTotal || !newEmiStart || !newEmiDue) return;
     const n = {
       id: Date.now(),
       name: newEmiName,
       amount: parseFloat(newEmiAmt) || 0,
       totalMonths: parseInt(newEmiTotal) || 0,
       paidMonths: parseInt(newEmiPaid) || 0,
+      startDate: newEmiStart,
+      dueDate: newEmiDue,
+      lastPaidDate: null
     };
     setEmis([...emis, n]);
     setNewEmiName('');
     setNewEmiAmt('');
     setNewEmiTotal('');
     setNewEmiPaid('');
+    setNewEmiStart('');
+    setNewEmiDue('');
   };
 
   const incrementEmi = (id) => {
-    setEmis(emis.map(e => e.id === id && e.paidMonths < e.totalMonths ? { ...e, paidMonths: e.paidMonths + 1 } : e));
+    setEmis(emis.map(e => {
+      if (e.id === id && e.paidMonths < e.totalMonths) {
+        return { 
+          ...e, 
+          paidMonths: e.paidMonths + 1,
+          lastPaidDate: new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })
+        };
+      }
+      return e;
+    }));
   };
 
   const deleteEmi = (id) => {
@@ -212,31 +228,71 @@ const PersonalView = () => {
             <h3 style={{ fontSize: '1.2rem', fontWeight: 800 }}>Active EMI Tracker</h3>
           </div>
           
-          <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
-            <input type="text" placeholder="EMI Name (e.g. iPhone)" className="glass-input" style={{ flex: 1, minWidth: '120px' }} value={newEmiName} onChange={e => setNewEmiName(e.target.value)} />
-            <input type="number" placeholder="₹ Amount/mo" className="glass-input" style={{ width: '120px' }} value={newEmiAmt} onChange={e => setNewEmiAmt(e.target.value)} />
-            <input type="number" placeholder="Total Months" className="glass-input" style={{ width: '100px' }} value={newEmiTotal} onChange={e => setNewEmiTotal(e.target.value)} />
-            <input type="number" placeholder="Paid Months" className="glass-input" style={{ width: '100px' }} value={newEmiPaid} onChange={e => setNewEmiPaid(e.target.value)} />
-            <button className="glass-btn" style={{ padding: '0 1rem' }} onClick={handleAddEmi}><Plus size={18} /></button>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+            <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+              <input type="text" placeholder="EMI Name (e.g. iPhone)" className="glass-input" style={{ flex: 1, minWidth: '120px' }} value={newEmiName} onChange={e => setNewEmiName(e.target.value)} />
+              <input type="number" placeholder="₹ Amt/mo" className="glass-input" style={{ width: '120px' }} value={newEmiAmt} onChange={e => setNewEmiAmt(e.target.value)} />
+              <input type="number" placeholder="Total Mo" className="glass-input" style={{ width: '90px' }} value={newEmiTotal} onChange={e => setNewEmiTotal(e.target.value)} />
+              <input type="number" placeholder="Paid Mo" className="glass-input" style={{ width: '90px' }} value={newEmiPaid} onChange={e => setNewEmiPaid(e.target.value)} />
+            </div>
+            <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+              <input type="date" title="Start Date" className="glass-input" style={{ flex: 1 }} value={newEmiStart} onChange={e => setNewEmiStart(e.target.value)} />
+              <input type="number" placeholder="Due Date (e.g. 5)" title="Day of the month" className="glass-input" style={{ width: '150px' }} value={newEmiDue} onChange={e => setNewEmiDue(e.target.value)} />
+              <button className="glass-btn" style={{ padding: '0 2rem' }} onClick={handleAddEmi}><Plus size={18} /> Add EMI</button>
+            </div>
           </div>
 
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', marginTop: '1rem', maxHeight: '400px', overflowY: 'auto', paddingRight: '10px' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', marginTop: '1rem', maxHeight: '500px', overflowY: 'auto', paddingRight: '10px' }}>
             {emis.length === 0 ? (
               <div style={{ textAlign: 'center', color: 'var(--text-muted)', fontSize: '0.9rem', padding: '2rem 0' }}>No active EMIs tracked.</div>
             ) : emis.map(e => {
               const remMonths = Math.max(0, e.totalMonths - e.paidMonths);
+              const totalAmt = e.totalMonths * e.amount;
+              const paidAmt = e.paidMonths * e.amount;
               const remAmount = remMonths * e.amount;
               const pct = e.totalMonths > 0 ? (e.paidMonths / e.totalMonths) * 100 : 0;
+              
+              let endDateStr = 'Unknown';
+              if (e.startDate && e.totalMonths) {
+                const sDate = new Date(e.startDate);
+                sDate.setMonth(sDate.getMonth() + e.totalMonths);
+                endDateStr = sDate.toLocaleDateString('en-GB', { month: 'short', year: 'numeric' });
+              }
+              const startDateStr = e.startDate ? new Date(e.startDate).toLocaleDateString('en-GB', { month: 'short', year: 'numeric' }) : 'Unknown';
+
               return (
                 <div key={e.id} style={{ background: 'var(--bg-hover)', padding: '1.2rem', borderRadius: '16px', border: '1px solid var(--border)', position: 'relative' }}>
                   <button onClick={() => deleteEmi(e.id)} style={{ position: 'absolute', top: '1rem', right: '1rem', background: 'transparent', border: 'none', color: 'var(--text-muted)', cursor: 'pointer' }}><Trash2 size={16} /></button>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.25rem' }}>
                     <div style={{ fontSize: '1.1rem', fontWeight: 800 }}>{e.name}</div>
                     <div style={{ fontSize: '1.1rem', fontWeight: 800, color: 'var(--accent)', marginRight: '2rem' }}>₹{e.amount.toLocaleString('en-IN')}<span style={{ fontSize: '0.7rem', color: 'var(--text-muted)', fontWeight: 500 }}>/mo</span></div>
                   </div>
-                  <div style={{ display: 'flex', gap: '2rem', fontSize: '0.8rem', color: 'var(--text-secondary)', marginBottom: '1rem' }}>
-                    <div><span style={{ color: 'var(--text-primary)', fontWeight: 600 }}>{remMonths}</span> months left</div>
-                    <div><span style={{ color: 'var(--text-primary)', fontWeight: 600 }}>₹{remAmount.toLocaleString('en-IN')}</span> remaining</div>
+                  
+                  {e.lastPaidDate && (
+                    <div style={{ display: 'inline-block', background: 'rgba(34, 197, 94, 0.1)', color: 'var(--green)', padding: '2px 8px', borderRadius: '4px', fontSize: '0.65rem', fontWeight: 700, marginBottom: '0.75rem', border: '1px solid rgba(34, 197, 94, 0.2)' }}>
+                      <CheckCircle size={10} style={{ display: 'inline', marginRight: '4px', verticalAlign: 'text-top' }} /> Last paid: {e.lastPaidDate}
+                    </div>
+                  )}
+
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', fontSize: '0.75rem', background: 'rgba(0,0,0,0.2)', padding: '10px', borderRadius: '8px', marginBottom: '1rem' }}>
+                    <div>
+                      <span style={{ color: 'var(--text-muted)' }}>Start:</span> <strong style={{ color: 'var(--text-primary)' }}>{startDateStr}</strong>
+                    </div>
+                    <div>
+                      <span style={{ color: 'var(--text-muted)' }}>End:</span> <strong style={{ color: 'var(--text-primary)' }}>{endDateStr}</strong>
+                    </div>
+                    <div>
+                      <span style={{ color: 'var(--text-muted)' }}>Due Date:</span> <strong style={{ color: 'var(--text-primary)' }}>{e.dueDate ? `${e.dueDate}th of month` : 'N/A'}</strong>
+                    </div>
+                    <div>
+                      <span style={{ color: 'var(--text-muted)' }}>Total:</span> <strong style={{ color: 'var(--text-primary)' }}>₹{totalAmt.toLocaleString('en-IN')}</strong>
+                    </div>
+                    <div>
+                      <span style={{ color: 'var(--text-muted)' }}>Paid:</span> <strong style={{ color: 'var(--green)' }}>₹{paidAmt.toLocaleString('en-IN')}</strong>
+                    </div>
+                    <div>
+                      <span style={{ color: 'var(--text-muted)' }}>Remaining:</span> <strong style={{ color: 'var(--red)' }}>₹{remAmount.toLocaleString('en-IN')}</strong>
+                    </div>
                   </div>
                   
                   <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
@@ -244,7 +300,7 @@ const PersonalView = () => {
                       <div style={{ height: '100%', width: `${pct}%`, background: pct === 100 ? 'var(--green)' : 'var(--accent)', transition: 'width 0.3s ease' }}></div>
                     </div>
                     <div style={{ fontSize: '0.75rem', fontWeight: 700, minWidth: '40px' }}>{e.paidMonths}/{e.totalMonths}</div>
-                    <button onClick={() => incrementEmi(e.id)} disabled={e.paidMonths >= e.totalMonths} className="btn" style={{ padding: '4px 12px', background: 'var(--accent-soft)', color: 'var(--accent)', borderRadius: '6px', fontSize: '0.8rem', fontWeight: 700, border: 'none', cursor: e.paidMonths >= e.totalMonths ? 'not-allowed' : 'pointer', opacity: e.paidMonths >= e.totalMonths ? 0.5 : 1 }}>+1</button>
+                    <button onClick={() => incrementEmi(e.id)} disabled={e.paidMonths >= e.totalMonths} className="btn" style={{ padding: '4px 12px', background: 'var(--accent-soft)', color: 'var(--accent)', borderRadius: '6px', fontSize: '0.8rem', fontWeight: 700, border: 'none', cursor: e.paidMonths >= e.totalMonths ? 'not-allowed' : 'pointer', opacity: e.paidMonths >= e.totalMonths ? 0.5 : 1 }}>+1 Pay</button>
                   </div>
                 </div>
               );
