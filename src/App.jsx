@@ -58,83 +58,55 @@ const fmt = (n) => '₹' + Number(n).toLocaleString('en-IN');
 const fmtDate = (s) => new Date(s).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
 
 // ─────────────────────────────────────────────
-//   SAMITI CALENDAR COMPONENT
+//   SAMITI MONTH GRID COMPONENT
 // ─────────────────────────────────────────────
-const SamitiCalendar = ({ samiti, payments, togglePayment }) => {
-  const [currentMonth, setCurrentMonth] = useState(new Date());
+const SamitiMonthGrid = ({ samiti, payments, togglePayment }) => {
+  const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun",
+                      "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
-  const year = currentMonth.getFullYear();
-  const month = currentMonth.getMonth();
+  const startDate = new Date(samiti.start_date);
+  const now = new Date();
+  const currentMonthStart = new Date(now.getFullYear(), now.getMonth(), 1);
 
-  const daysInMonth = new Date(year, month + 1, 0).getDate();
-  const firstDayIndex = new Date(year, month, 1).getDay(); // 0 is Sunday, 1 is Monday
-
-  // Adjust so Monday is 0
-  const startDay = firstDayIndex === 0 ? 6 : firstDayIndex - 1;
-
-  const monthNames = ["January", "February", "March", "April", "May", "June",
-                      "July", "August", "September", "October", "November", "December"];
-
-  const prevMonth = () => setCurrentMonth(new Date(year, month - 1, 1));
-  const nextMonth = () => setCurrentMonth(new Date(year, month + 1, 1));
-
-  const sDate = new Date(samiti.start_date);
-  const mDate = new Date(sDate);
-  mDate.setMonth(mDate.getMonth() + samiti.tenure_months);
-  
-  sDate.setHours(0,0,0,0);
-  mDate.setHours(0,0,0,0);
+  const months = [];
+  for (let i = 0; i < samiti.tenure_months; i++) {
+    const d = new Date(startDate.getFullYear(), startDate.getMonth() + i, 1);
+    const mm = String(d.getMonth() + 1).padStart(2, '0');
+    const dateStr = `${d.getFullYear()}-${mm}-01`;
+    const label = `${monthNames[d.getMonth()]} ${String(d.getFullYear()).slice(2)}`;
+    const isPaid = payments.some(p => p.payment_date === dateStr);
+    const isFuture = d > currentMonthStart;
+    months.push({ dateStr, label, isPaid, isFuture });
+  }
 
   return (
     <div style={{ background: 'var(--bg-hover)', padding: '12px', borderRadius: 'var(--r-md)', border: '1px solid var(--border)' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
-        <button onClick={prevMonth} className="btn-icon" style={{ height: 28, width: 28 }}><ChevronLeft size={16}/></button>
-        <span style={{ fontSize: '0.85rem', fontWeight: 800, color: 'var(--text-primary)' }}>{monthNames[month]} {year}</span>
-        <button onClick={nextMonth} className="btn-icon" style={{ height: 28, width: 28 }}><ChevronRight size={16}/></button>
+      <div style={{ fontSize: '0.7rem', fontWeight: 700, color: 'var(--text-muted)', marginBottom: '10px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+        Monthly Payments — Click to Mark Paid
       </div>
-
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: '4px', textAlign: 'center' }}>
-        {['M', 'T', 'W', 'T', 'F', 'S', 'S'].map((d, i) => (
-          <div key={i} style={{ fontSize: '0.65rem', fontWeight: 800, color: 'var(--text-muted)' }}>{d}</div>
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+        {months.map(({ dateStr, label, isPaid, isFuture }) => (
+          <button
+            key={dateStr}
+            onClick={() => !isFuture && togglePayment(samiti.id, dateStr, isPaid)}
+            disabled={isFuture}
+            title={isFuture ? 'Future month' : (isPaid ? 'Click to unmark' : 'Click to mark paid')}
+            style={{
+              padding: '5px 11px',
+              borderRadius: '20px',
+              fontSize: '0.72rem',
+              fontWeight: 700,
+              border: isPaid ? 'none' : `1px solid ${isFuture ? 'var(--border)' : 'var(--border-strong)'}`,
+              background: isPaid ? 'var(--green)' : (isFuture ? 'transparent' : 'var(--bg-card)'),
+              color: isPaid ? 'white' : (isFuture ? 'var(--text-muted)' : 'var(--text-secondary)'),
+              cursor: isFuture ? 'not-allowed' : 'pointer',
+              opacity: isFuture ? 0.35 : 1,
+              transition: 'all 0.15s',
+            }}
+          >
+            {isPaid ? '✓ ' : ''}{label}
+          </button>
         ))}
-        
-        {Array.from({ length: startDay }).map((_, i) => <div key={`empty-${i}`} />)}
-
-        {Array.from({ length: daysInMonth }).map((_, i) => {
-          const day = i + 1;
-          const dateObj = new Date(year, month, day);
-          
-          const tzOffset = dateObj.getTimezoneOffset() * 60000;
-          const localISOTime = (new Date(dateObj - tzOffset)).toISOString().slice(0, -1);
-          const dateStr = localISOTime.split('T')[0];
-          
-          const isPaid = payments.some(p => p.payment_date === dateStr);
-          
-          const isBeforeStart = dateObj < sDate;
-          const isAfterMaturity = dateObj > mDate;
-          const isDisabled = isBeforeStart || isAfterMaturity;
-
-          return (
-            <button 
-              key={day}
-              disabled={isDisabled}
-              onClick={() => togglePayment(samiti.id, dateStr, isPaid)}
-              style={{
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                aspectRatio: '1', borderRadius: '6px',
-                background: isPaid ? 'var(--green)' : (isDisabled ? 'transparent' : 'var(--bg-card)'),
-                color: isPaid ? 'white' : (isDisabled ? 'var(--text-muted)' : 'var(--text-secondary)'),
-                border: isPaid ? 'none' : (isDisabled ? '1px dashed var(--border)' : '1px solid var(--border-strong)'),
-                cursor: isDisabled ? 'not-allowed' : 'pointer',
-                opacity: isDisabled ? 0.3 : 1,
-                transition: 'all 0.15s', padding: 0, fontSize: '0.75rem', fontWeight: 700
-              }}
-              title={dateStr}
-            >
-              {day}
-            </button>
-          );
-        })}
       </div>
     </div>
   );
@@ -1785,7 +1757,7 @@ export default function App() {
 
                       <div className="detail-grid" style={{ margin: '0', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: '0.5rem' }}>
                         <div style={{ display: 'flex', flexDirection: 'column' }}>
-                          <span style={{ fontSize: '0.65rem', fontWeight: 700, color: 'var(--text-secondary)', textTransform: 'uppercase' }}>Daily</span>
+                          <span style={{ fontSize: '0.65rem', fontWeight: 700, color: 'var(--text-secondary)', textTransform: 'uppercase' }}>Monthly</span>
                           <span style={{ fontSize: '1rem', fontWeight: 800, color: 'var(--text-primary)' }}>{fmt(samiti.daily_amount)}</span>
                         </div>
                         <div style={{ display: 'flex', flexDirection: 'column' }}>
@@ -1812,7 +1784,7 @@ export default function App() {
                         </div>
                       </div>
 
-                      <SamitiCalendar samiti={samiti} payments={sPayments} togglePayment={toggleSamitiPayment} />
+                      <SamitiMonthGrid samiti={samiti} payments={sPayments} togglePayment={toggleSamitiPayment} />
                     </div>
                   );
                 })}
@@ -2034,36 +2006,19 @@ export default function App() {
                     <input name="name" type="text" required placeholder="e.g. Diwali Samiti" defaultValue={modal.item?.name || ''}/>
                   </div>
                   <div className="form-group">
-                    <label>Daily Amount (₹)</label>
+                    <label>Monthly Amount (₹)</label>
                     <input name="daily_amount" type="number" required placeholder="0" min="1" defaultValue={modal.item?.daily_amount || ''} onChange={e => {
                       const form = e.target.form;
                       const d = parseFloat(form.daily_amount.value) || 0;
                       const t = parseInt(form.tenure_months.value) || 0;
-                      const s = form.start_date.value;
-                      if (d && t && s) {
-                        const sDate = new Date(s);
-                        const mDate = new Date(s);
-                        mDate.setMonth(mDate.getMonth() + t);
-                        const diffDays = Math.round(Math.abs(mDate - sDate) / (1000 * 60 * 60 * 24));
-                        form.maturity_amount.value = d * diffDays;
+                      if (d && t) {
+                        form.maturity_amount.value = d * t;
                       }
                     }}/>
                   </div>
                   <div className="form-group">
                     <label>Start Date</label>
-                    <input name="start_date" type="date" required defaultValue={modal.item?.start_date || new Date().toISOString().split('T')[0]} onChange={e => {
-                      const form = e.target.form;
-                      const d = parseFloat(form.daily_amount.value) || 0;
-                      const t = parseInt(form.tenure_months.value) || 0;
-                      const s = form.start_date.value;
-                      if (d && t && s) {
-                        const sDate = new Date(s);
-                        const mDate = new Date(s);
-                        mDate.setMonth(mDate.getMonth() + t);
-                        const diffDays = Math.round(Math.abs(mDate - sDate) / (1000 * 60 * 60 * 24));
-                        form.maturity_amount.value = d * diffDays;
-                      }
-                    }}/>
+                    <input name="start_date" type="date" required defaultValue={modal.item?.start_date || new Date().toISOString().split('T')[0]} />
                   </div>
                   <div className="form-group">
                     <label>Tenure (Months)</label>
@@ -2071,13 +2026,8 @@ export default function App() {
                       const form = e.target.form;
                       const d = parseFloat(form.daily_amount.value) || 0;
                       const t = parseInt(form.tenure_months.value) || 0;
-                      const s = form.start_date.value;
-                      if (d && t && s) {
-                        const sDate = new Date(s);
-                        const mDate = new Date(s);
-                        mDate.setMonth(mDate.getMonth() + t);
-                        const diffDays = Math.round(Math.abs(mDate - sDate) / (1000 * 60 * 60 * 24));
-                        form.maturity_amount.value = d * diffDays;
+                      if (d && t) {
+                        form.maturity_amount.value = d * t;
                       }
                     }}/>
                   </div>
